@@ -124,15 +124,6 @@ export const ventasService = {
   },
 
   async createVenta(payload: NuevaVentaPayload): Promise<Venta> {
-    // Validar tipo vs plazo antes de insertar
-    const plazo = MOCK_PLAZOS.find(p => p.id === payload.plazo_id);
-    const tipoDoc = MOCK_TIPOS_DOCUMENTO.find(t => t.id === payload.tipo_doc_id);
-    
-    if (plazo && tipoDoc && plazo.tipo_id !== tipoDoc.id) {
-      const errorMsg = `Plazo incompatible: El plazo "${plazo.descripcion}" no es válido para el tipo de documento "${tipoDoc.descripcion}".`;
-      throw new Error(errorMsg);
-    }
-
     try {
       // Intentar insertar en Supabase
       const { data, error } = await supabase

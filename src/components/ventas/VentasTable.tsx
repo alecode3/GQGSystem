@@ -40,7 +40,7 @@ export const VentasTable: React.FC<VentasTableProps> = ({
   };
 
   const getPlazoName = (id: number) => {
-    return plazos.find(p => p.id === id)?.descripcion || `Plazo #${id}`;
+    return plazos.find(p => p.id === id)?.plazo || `Plazo #${id}`;
   };
 
   if (ventas.length === 0) {

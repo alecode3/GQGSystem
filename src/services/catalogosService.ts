@@ -27,10 +27,10 @@ export const MOCK_TIPOS_DOCUMENTO: TipoDocumento[] = [
 ];
 
 export const MOCK_PLAZOS: Plazo[] = [
-  { id: 1, descripcion: 'Contado - 0 días', tipo_id: 1, dias: 0, activo: true },
-  { id: 2, descripcion: 'Crédito - 30 días', tipo_id: 2, dias: 30, activo: true },
-  { id: 3, descripcion: 'Crédito Regular - 30/60/90 días', tipo_id: 2, dias: 90, activo: true },
-  { id: 4, descripcion: 'Crédito Irregular - 45/75 días', tipo_id: 2, dias: 75, activo: true }
+  { id: 1, plazo: 'Contado - 0 días', tipo_id: 1, cuotas: 1, irregular: false, activo: true },
+  { id: 2, plazo: 'Crédito - 30 días', tipo_id: 2, cuotas: 1, irregular: false, activo: true },
+  { id: 3, plazo: 'Crédito Regular - 30/60/90 días', tipo_id: 2, cuotas: 3, irregular: false, activo: true },
+  { id: 4, plazo: 'Crédito Irregular - 45/75 días', tipo_id: 2, cuotas: 2, irregular: true, activo: true }
 ];
 
 export const catalogosService = {

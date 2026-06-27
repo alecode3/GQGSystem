@@ -29,7 +29,7 @@ export const simulateCuentasCobrarTrigger = (venta: Venta) => {
   const monedaDesc = monedaObj?.descripcion || 'Guaraníes';
   const monedaAbrev = monedaObj?.abreviatura || 'PYG';
   const plazoObj = MOCK_PLAZOS.find(p => p.id === venta.plazo_id);
-  const plazoDesc = plazoObj?.descripcion || `Plazo #${venta.plazo_id}`;
+  const plazoDesc = plazoObj?.plazo || `Plazo #${venta.plazo_id}`;
   
   const cuotasGeneradas: CuentaCobrarDetalle[] = [];
   const existingCuentas = getLocalCuentas().filter(c => c.venta_id !== venta.id); // Evitar duplicados si re-guardamos

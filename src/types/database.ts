@@ -30,18 +30,18 @@ export interface Deposito {
 
 export interface Plazo {
   id: number;
-  descripcion: string;
-  tipo_id: number; // Relación con TipoDocumento
-  dias: number;
+  plazo: string;
+  tipo_id: number;
+  cuotas: number;
+  irregular: boolean;
   activo: boolean;
 }
 
 export interface PlazoDetalle {
   id: number;
   plazo_id: number;
-  nro_cuota: number;
-  dias_vence: number;
-  porcentaje: number;
+  cuota: number;
+  dias: number;
 }
 
 export interface Venta {

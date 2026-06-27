@@ -1,13 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, PlusCircle, Coins, Award } from 'lucide-react';
+import { LayoutDashboard, Receipt, PlusCircle, Coins, Award, CalendarDays } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const menuItems = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/ventas', label: 'Ver Ventas', icon: Receipt },
     { to: '/ventas/nueva', label: 'Registrar Venta', icon: PlusCircle },
-    { to: '/cuentas-cobrar', label: 'Cuentas a Cobrar', icon: Coins }
+    { to: '/cuentas-cobrar', label: 'Cuentas a Cobrar', icon: Coins },
+    { to: '/plazos', label: 'ABM Plazos', icon: CalendarDays }
   ];
 
   return (

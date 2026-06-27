@@ -346,7 +346,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
                 placeholder={tipoDocId ? "Seleccione plazo compatible..." : "Primero elija tipo de documento"}
                 required
                 disabled={!tipoDocId}
-                options={plazosFiltrados.map(p => ({ value: p.id, label: p.descripcion }))}
+                options={plazosFiltrados.map(p => ({ value: p.id, label: p.plazo }))}
               />
             </div>
           </Card>
