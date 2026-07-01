@@ -24,7 +24,7 @@ const saveLocalCuentas = (cuentas: CuentaCobrarDetalle[]) => {
  * Guarda los resultados formateados en la estructura de la vista v_cuentas_cobrar_detalle.
  */
 export const simulateCuentasCobrarTrigger = (venta: Venta) => {
-  const cliente = MOCK_CLIENTES.find(c => c.id === venta.cliente_id)?.razon_social || `Cliente #${venta.cliente_id}`;
+  const cliente = MOCK_CLIENTES.find(c => c.id === venta.cliente_id)?.ruc || `Cliente #${venta.cliente_id}`;
   const monedaObj = MOCK_MONEDAS.find(m => m.id === venta.moneda_id);
   const monedaDesc = monedaObj?.descripcion || 'Guaraníes';
   const monedaAbrev = monedaObj?.abreviatura || 'PYG';

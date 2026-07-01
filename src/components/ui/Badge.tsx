@@ -6,7 +6,7 @@ interface BadgeProps {
 }
 
 export const Badge: React.FC<BadgeProps> = ({ status, className = '' }) => {
-  const isCobrado = status.toUpperCase() === 'COBRADO';
+  const isCobrado = status.toUpperCase() === 'COBRADO' || status.toUpperCase() === 'PAGADO';
   const isPendiente = status.toUpperCase() === 'PENDIENTE';
 
   let colors = 'bg-slate-100 text-slate-700 border-slate-200'; // Fallback

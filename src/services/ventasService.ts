@@ -1,6 +1,5 @@
 import { supabase } from './supabaseClient';
 import { Venta, NuevaVentaPayload } from '../types/venta';
-import { MOCK_PLAZOS, MOCK_TIPOS_DOCUMENTO } from './catalogosService';
 import { simulateCuentasCobrarTrigger } from './cuentasCobrarService';
 
 // Clave para guardar en localStorage

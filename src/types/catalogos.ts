@@ -1,3 +1,4 @@
-import { Cliente, Moneda, Deposito, TipoDocumento, Plazo, PlazoDetalle } from './database';
+import { Cliente, Proveedor, Moneda, Deposito, TipoDocumento, Plazo, PlazoDetalle } from './database';
 
-export type { Cliente, Moneda, Deposito, TipoDocumento, Plazo, PlazoDetalle };
+export type { Cliente, Proveedor, Moneda, Deposito, TipoDocumento, Plazo, PlazoDetalle };
+

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, PlusCircle, Coins, Award, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, Receipt, PlusCircle, Coins, Award, CalendarDays, ShoppingBag, CreditCard } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const menuItems = [
@@ -8,8 +8,12 @@ export const Sidebar: React.FC = () => {
     { to: '/ventas', label: 'Ver Ventas', icon: Receipt },
     { to: '/ventas/nueva', label: 'Registrar Venta', icon: PlusCircle },
     { to: '/cuentas-cobrar', label: 'Cuentas a Cobrar', icon: Coins },
+    { to: '/compras', label: 'Ver Compras', icon: ShoppingBag },
+    { to: '/compras/nueva', label: 'Registrar Compra', icon: PlusCircle },
+    { to: '/cuentas-pagar', label: 'Cuentas a Pagar', icon: CreditCard },
     { to: '/plazos', label: 'ABM Plazos', icon: CalendarDays }
   ];
+
 
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen fixed left-0 top-0 z-30 shadow-xl border-r border-slate-800">

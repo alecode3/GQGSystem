@@ -4,7 +4,7 @@ import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { Plazo, PlazoDetalle, TipoDocumento } from '../../types/database';
 import { NuevoPlazoPayload, NuevoPlazoDetallePayload } from '../../services/plazosService';
-import { Save, X, CalendarDays, Plus, Trash2 } from 'lucide-react';
+import { Save, X, CalendarDays } from 'lucide-react';
 
 interface PlazoFormProps {
   initialPlazo?: Plazo;

@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { VentasTable } from '../components/ventas/VentasTable';
+import { ComprasTable } from '../components/compras/ComprasTable';
 import { Loading } from '../components/ui/Loading';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { catalogosService } from '../services/catalogosService';
-import { ventasService } from '../services/ventasService';
-import { Venta } from '../types/venta';
-import { Cliente, Moneda, Plazo, TipoDocumento } from '../types/catalogos';
+import { comprasService } from '../services/comprasService';
+import { Compra } from '../types/compra';
+import { Proveedor, Moneda, Plazo, TipoDocumento } from '../types/catalogos';
 import { PlusCircle, Search, RefreshCw } from 'lucide-react';
 
-export const VentasPage: React.FC = () => {
+export const ComprasPage: React.FC = () => {
   const navigate = useNavigate();
-  const [ventas, setVentas] = useState<Venta[]>([]);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [compras, setCompras] = useState<Compra[]>([]);
+  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [monedas, setMonedas] = useState<Moneda[]>([]);
   const [plazos, setPlazos] = useState<Plazo[]>([]);
   const [tiposDoc, setTiposDoc] = useState<TipoDocumento[]>([]);
@@ -25,20 +25,20 @@ export const VentasPage: React.FC = () => {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [ventasData, clientesData, monedasData, plazosData, tiposDocData] = await Promise.all([
-        ventasService.getVentas(),
-        catalogosService.getClientes(),
+      const [comprasData, proveedoresData, monedasData, plazosData, tiposDocData] = await Promise.all([
+        comprasService.getCompras(),
+        catalogosService.getProveedores(),
         catalogosService.getMonedas(),
         catalogosService.getPlazos(),
         catalogosService.getTiposDocumento()
       ]);
-      setVentas(ventasData);
-      setClientes(clientesData);
+      setCompras(comprasData);
+      setProveedores(proveedoresData);
       setMonedas(monedasData);
       setPlazos(plazosData);
       setTiposDoc(tiposDocData);
     } catch (e) {
-      console.error('Falla al cargar listado de ventas', e);
+      console.error('Falla al cargar listado de compras', e);
     } finally {
       setIsLoading(false);
     }
@@ -48,23 +48,23 @@ export const VentasPage: React.FC = () => {
     loadData();
   }, []);
 
-  // Filtrar ventas por RUC del cliente, Razón Social o Número de Factura
-  const filteredVentas = ventas.filter((venta) => {
-    const cliente = clientes.find(c => c.id === venta.cliente_id);
-    const clienteName = cliente?.ruc.toLowerCase() || '';
-    const clienteRuc = cliente?.ruc || '';
-    const nroFacturaStr = String(venta.nro_factura);
+  // Filtrar compras por RUC del proveedor, Razón Social o Número de Factura
+  const filteredCompras = compras.filter((compra) => {
+    const proveedor = proveedores.find(p => p.id === compra.proveedor_id);
+    const proveedorName = proveedor?.ruc.toLowerCase() || '';
+    const proveedorRuc = proveedor?.ruc || '';
+    const nroFacturaStr = String(compra.nro_factura);
     const query = searchQuery.toLowerCase();
     
     return (
-      clienteName.includes(query) ||
-      clienteRuc.includes(query) ||
+      proveedorName.includes(query) ||
+      proveedorRuc.includes(query) ||
       nroFacturaStr.includes(query)
     );
   });
 
   if (isLoading) {
-    return <Loading message="Consultando ventas registradas en la base de datos..." fullPage />;
+    return <Loading message="Consultando compras registradas en la base de datos..." fullPage />;
   }
 
   return (
@@ -73,10 +73,10 @@ export const VentasPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-            Ventas Registradas
+            Compras Registradas
           </h2>
           <p className="text-sm text-slate-500 font-medium">
-            Listado completo de facturas de contado y crédito emitidas por GQG System.
+            Listado completo de facturas de compra (contado y crédito) ingresadas al GQG System.
           </p>
         </div>
         <div className="flex gap-2">
@@ -90,11 +90,11 @@ export const VentasPage: React.FC = () => {
           </Button>
           <Button
             variant="primary"
-            onClick={() => navigate('/ventas/nueva')}
+            onClick={() => navigate('/compras/nueva')}
             className="flex items-center gap-2"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Registrar Factura</span>
+            <span>Registrar Compra</span>
           </Button>
         </div>
       </div>
@@ -104,7 +104,7 @@ export const VentasPage: React.FC = () => {
         <div className="relative flex-grow">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
-            placeholder="Buscar por cliente, RUC o número de factura..."
+            placeholder="Buscar por proveedor, RUC o número de factura..."
             className="pl-10"
             value={searchQuery}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
@@ -112,10 +112,10 @@ export const VentasPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Grid de Ventas */}
-      <VentasTable
-        ventas={filteredVentas}
-        clientes={clientes}
+      {/* Grid de Compras */}
+      <ComprasTable
+        compras={filteredCompras}
+        proveedores={proveedores}
         monedas={monedas}
         plazos={plazos}
         tiposDoc={tiposDoc}

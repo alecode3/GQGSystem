@@ -6,7 +6,7 @@ interface SummaryCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
-  color?: 'emerald' | 'blue' | 'amber' | 'slate';
+  color?: 'emerald' | 'blue' | 'amber' | 'slate' | 'red';
   description?: string;
 }
 
@@ -37,6 +37,11 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
       bg: 'bg-slate-50 text-slate-600 border-slate-100',
       icon: 'text-slate-600',
       focus: 'ring-slate-500'
+    },
+    red: {
+      bg: 'bg-rose-50 text-rose-600 border-rose-100',
+      icon: 'text-rose-600',
+      focus: 'ring-rose-500'
     }
   };
 

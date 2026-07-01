@@ -4,25 +4,24 @@ import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ErrorMessage } from '../ui/ErrorMessage';
-import { Cliente, Moneda, Deposito, TipoDocumento, Plazo } from '../../types/catalogos';
-import { NuevaVentaPayload } from '../../types/venta';
-import { CuentaCobrarDetalle } from '../../types/cuentaCobrar';
-import { cuentasCobrarService } from '../../services/cuentasCobrarService';
+import { Proveedor, Moneda, Deposito, TipoDocumento, Plazo } from '../../types/catalogos';
+import { NuevaCompraPayload } from '../../types/compra';
+import { CuentaPagarDetalle } from '../../types/cuentaPagar';
+import { cuentasPagarService } from '../../services/cuentasPagarService';
 import { formatCurrency, formatInvoice } from '../../utils/formatters';
-import { formatDate } from '../../utils/dates';
 import { Save, PlusCircle, CheckCircle, Calendar, CreditCard, DollarSign } from 'lucide-react';
 
-interface VentaFormProps {
-  clientes: Cliente[];
+interface CompraFormProps {
+  proveedores: Proveedor[];
   monedas: Moneda[];
   depositos: Deposito[];
   tiposDoc: TipoDocumento[];
   plazos: Plazo[];
-  onSubmit: (payload: NuevaVentaPayload) => Promise<any>;
+  onSubmit: (payload: NuevaCompraPayload) => Promise<any>;
 }
 
-export const VentaForm: React.FC<VentaFormProps> = ({
-  clientes,
+export const CompraForm: React.FC<CompraFormProps> = ({
+  proveedores,
   monedas,
   depositos,
   tiposDoc,
@@ -31,10 +30,10 @@ export const VentaForm: React.FC<VentaFormProps> = ({
 }) => {
   // Estados del Formulario
   const [fechaFactura, setFechaFactura] = useState(new Date().toISOString().split('T')[0]);
-  const [clienteId, setClienteId] = useState('');
+  const [proveedorId, setProveedorId] = useState('');
   const [serie, setSerie] = useState('001-001');
   const [nroFactura, setNroFactura] = useState('');
-  const [timbrado, setTimbrado] = useState('12345678');
+  const [timbrado, setTimbrado] = useState('87654321');
   const [timbradoVence, setTimbradoVence] = useState(
     new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
   );
@@ -52,8 +51,8 @@ export const VentaForm: React.FC<VentaFormProps> = ({
   // Estados de carga, error y éxito
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [successVenta, setSuccessVenta] = useState<any | null>(null);
-  const [cuotasGeneradas, setCuotasGeneradas] = useState<CuentaCobrarDetalle[]>([]);
+  const [successCompra, setSuccessCompra] = useState<any | null>(null);
+  const [cuotasGeneradas, setCuotasGeneradas] = useState<CuentaPagarDetalle[]>([]);
 
   // Recalcular el total_factura automáticamente cuando cambian los importes individuales
   useEffect(() => {
@@ -73,7 +72,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
   };
 
   const validateForm = (): string | null => {
-    if (!clienteId) return 'Debe seleccionar un cliente.';
+    if (!proveedorId) return 'Debe seleccionar un proveedor.';
     if (!depositoId) return 'Debe seleccionar un depósito.';
     if (!monedaId) return 'Debe seleccionar una moneda.';
     if (!tipoDocId) return 'Debe seleccionar un tipo de documento.';
@@ -97,7 +96,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-    setSuccessVenta(null);
+    setSuccessCompra(null);
     setCuotasGeneradas([]);
 
     const validationError = validateForm();
@@ -108,9 +107,9 @@ export const VentaForm: React.FC<VentaFormProps> = ({
 
     setIsLoading(true);
     try {
-      const payload: NuevaVentaPayload = {
+      const payload: NuevaCompraPayload = {
         fecha_factura: fechaFactura,
-        cliente_id: Number(clienteId),
+        proveedor_id: Number(proveedorId),
         serie: serie.trim(),
         nro_factura: Number(nroFactura),
         timbrado: timbrado.trim(),
@@ -125,29 +124,29 @@ export const VentaForm: React.FC<VentaFormProps> = ({
         plazo_id: Number(plazoId)
       };
 
-      // Registrar venta
-      const ventaRegistrada = await onSubmit(payload);
-      setSuccessVenta(ventaRegistrada);
+      // Registrar compra
+      const compraRegistrada = await onSubmit(payload);
+      setSuccessCompra(compraRegistrada);
 
-      // Inmediatamente después de insertar, consultar v_cuentas_cobrar_detalle para la venta recién creada
-      const cuotas = await cuentasCobrarService.getCuentasByVentaId(ventaRegistrada.id);
+      // Inmediatamente después de insertar, consultar v_cuentas_pagar_detalle para la compra recién creada
+      const cuotas = await cuentasPagarService.getCuentasByCompraId(compraRegistrada.id);
       setCuotasGeneradas(cuotas);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Error al procesar la venta. Verifique la compatibilidad de plazos en la base de datos.');
+      setErrorMsg(err.message || 'Error al procesar la compra. Verifique la compatibilidad de plazos en la base de datos.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleReset = () => {
-    setClienteId('');
+    setProveedorId('');
     setNroFactura('');
     setTipoDocId('');
     setPlazoId('');
     setTotalExento('0');
     setTotalBase('0');
     setTotalImpuesto('0');
-    setSuccessVenta(null);
+    setSuccessCompra(null);
     setCuotasGeneradas([]);
     setErrorMsg('');
   };
@@ -163,7 +162,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
         />
       )}
 
-      {successVenta && (
+      {successCompra && (
         <Card className="bg-emerald-50/30 border-emerald-200 animate-fade-in">
           <div className="flex gap-4">
             <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
@@ -171,10 +170,10 @@ export const VentaForm: React.FC<VentaFormProps> = ({
             </div>
             <div className="flex-grow space-y-2">
               <h3 className="text-base font-bold text-emerald-800">
-                ¡Venta Registrada Exitosamente en GQG System!
+                ¡Compra Registrada Exitosamente en GQG System!
               </h3>
               <p className="text-sm text-emerald-700">
-                La factura <span className="font-extrabold">{formatInvoice(successVenta.serie, successVenta.nro_factura)}</span> por un total de <span className="font-extrabold">{formatCurrency(successVenta.total_factura, monedaAbrev)}</span> ha sido procesada de manera correcta.
+                La factura de compra <span className="font-extrabold">{formatInvoice(successCompra.serie, successCompra.nro_factura)}</span> por un total de <span className="font-extrabold">{formatCurrency(successCompra.total_factura, monedaAbrev)}</span> ha sido procesada de manera correcta.
               </p>
               
               {/* Sección 5: Resultado de Cuotas Generadas */}
@@ -199,15 +198,9 @@ export const VentaForm: React.FC<VentaFormProps> = ({
                         <span className="text-lg font-black text-slate-800 block mt-1">
                           {formatCurrency(cuota.importe, cuota.moneda_abreviatura)}
                         </span>
-                        <div className="flex items-center gap-1 mt-2 text-xs font-medium text-slate-500">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Vence: <strong className="text-slate-700">{formatDate(cuota.vence)}</strong></span>
-                        </div>
-                        <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-400">ESTADO</span>
-                          <span className="font-extrabold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md">
-                            {cuota.estado}
-                          </span>
+                        <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-2 font-medium">
+                          <Calendar className="w-3.5 h-3.5 text-brand-600" />
+                          <span>Vence el {new Date(cuota.vence).toLocaleDateString()}</span>
                         </div>
                       </div>
                     ))}
@@ -215,15 +208,14 @@ export const VentaForm: React.FC<VentaFormProps> = ({
                 </div>
               )}
 
-              <div className="pt-2 flex gap-3">
+              <div className="pt-2">
                 <Button
                   variant="primary"
-                  size="sm"
                   onClick={handleReset}
-                  className="flex items-center gap-1.5"
+                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/10 shadow-lg"
                 >
                   <PlusCircle className="w-4 h-4" />
-                  <span>Registrar Otra Venta</span>
+                  <span>Registrar Otra Compra</span>
                 </Button>
               </div>
             </div>
@@ -231,18 +223,27 @@ export const VentaForm: React.FC<VentaFormProps> = ({
         </Card>
       )}
 
-      {!successVenta && (
+      {!successCompra && (
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* SECCIÓN 1: DATOS DE FACTURA */}
-          <Card className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+          {/* SECCIÓN 1: DATOS GENERALES DE LA COMPRA */}
+          <Card className="p-6 space-y-6">
+            <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-brand-600" />
-              <h2 className="text-base font-bold text-slate-800">
-                Sección 1: Datos de Factura
-              </h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <span>Sección 1: Cabecera y Proveedor</span>
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Select
+                label="Proveedor"
+                value={proveedorId}
+                onChange={(e) => setProveedorId(e.target.value)}
+                required
+                options={[
+                  { value: '', label: 'Seleccione un proveedor...' },
+                  ...proveedores.map(p => ({ value: p.id, label: `${p.ruc}` }))
+                ]}
+              />
+
               <Input
                 label="Fecha de Factura"
                 type="date"
@@ -250,69 +251,17 @@ export const VentaForm: React.FC<VentaFormProps> = ({
                 onChange={(e) => setFechaFactura(e.target.value)}
                 required
               />
-              <Input
-                label="Serie Factura"
-                placeholder="001-001"
-                value={serie}
-                onChange={(e) => setSerie(e.target.value)}
-                required
-                helperText="Formato estándar paraguayo (ej. 001-001)"
-              />
-              <Input
-                label="Nro. Factura"
-                type="number"
-                placeholder="Ej: 1450"
-                value={nroFactura}
-                onChange={(e) => setNroFactura(e.target.value)}
-                required
-              />
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Número de Timbrado"
-                placeholder="Ej: 12345678"
-                value={timbrado}
-                onChange={(e) => setTimbrado(e.target.value)}
-                required
-              />
-              <Input
-                label="Timbrado Vence"
-                type="date"
-                value={timbradoVence}
-                onChange={(e) => setTimbradoVence(e.target.value)}
-                required
-              />
-            </div>
-          </Card>
-
-          {/* SECCIÓN 2: CLIENTE Y MONEDA */}
-          <Card className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <DollarSign className="w-5 h-5 text-brand-600" />
-              <h2 className="text-base font-bold text-slate-800">
-                Sección 2: Cliente, Depósito y Moneda
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
-                label="Seleccionar Cliente"
-                value={clienteId}
-                onChange={(e) => setClienteId(e.target.value)}
-                placeholder="Seleccione un cliente..."
-                required
-                options={clientes.map(c => ({ value: c.id, label: `${c.ruc}` }))}
-              />
-              <Select
-                label="Depósito Comercial"
+                label="Depósito Destino"
                 value={depositoId}
                 onChange={(e) => setDepositoId(e.target.value)}
                 required
                 options={depositos.map(d => ({ value: d.id, label: d.descripcion }))}
               />
+
               <Select
-                label="Moneda de Transacción"
+                label="Moneda"
                 value={monedaId}
                 onChange={(e) => setMonedaId(e.target.value)}
                 required
@@ -321,102 +270,141 @@ export const VentaForm: React.FC<VentaFormProps> = ({
             </div>
           </Card>
 
-          {/* SECCIÓN 3: TIPO DE DOCUMENTO Y PLAZO */}
-          <Card className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+          {/* SECCIÓN 2: DATOS DEL COMPROBANTE */}
+          <Card className="p-6 space-y-6">
+            <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-brand-600" />
-              <h2 className="text-base font-bold text-slate-800">
-                Sección 3: Tipo de Documento y Plazo Comercial
-              </h2>
+              <span>Sección 2: Factura y Timbrado de Compra</span>
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Input
+                label="Serie (Establecimiento-Punto Emisión)"
+                placeholder="Ej: 001-001"
+                value={serie}
+                onChange={(e) => setSerie(e.target.value)}
+                required
+              />
+
+              <Input
+                label="Número de Factura"
+                type="number"
+                placeholder="Ej: 14500"
+                value={nroFactura}
+                onChange={(e) => setNroFactura(e.target.value)}
+                required
+              />
+
+              <Input
+                label="Número de Timbrado"
+                placeholder="Ej: 87654321"
+                value={timbrado}
+                onChange={(e) => setTimbrado(e.target.value)}
+                required
+              />
+
+              <Input
+                label="Vencimiento de Timbrado"
+                type="date"
+                value={timbradoVence}
+                onChange={(e) => setTimbradoVence(e.target.value)}
+                required
+              />
             </div>
+          </Card>
+
+          {/* SECCIÓN 3: CONDICIÓN Y PLAZO */}
+          <Card className="p-6 space-y-6">
+            <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-brand-600" />
+              <span>Sección 3: Modalidad y Plazo de Financiación</span>
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select
-                label="Tipo de Documento"
+                label="Tipo de Documento (Condición)"
                 value={tipoDocId}
                 onChange={handleTipoDocChange}
-                placeholder="Seleccione tipo..."
                 required
-                options={tiposDoc.map(t => ({ value: t.id, label: t.descripcion }))}
+                options={[
+                  { value: '', label: 'Seleccione modalidad...' },
+                  ...tiposDoc.map(t => ({ value: t.id, label: t.descripcion }))
+                ]}
               />
+
               <Select
-                label="Plazo Comercial Habilitado"
+                label="Plazo Comercial"
                 value={plazoId}
                 onChange={(e) => setPlazoId(e.target.value)}
-                placeholder={tipoDocId ? "Seleccione plazo compatible..." : "Primero elija tipo de documento"}
                 required
                 disabled={!tipoDocId}
-                options={plazosFiltrados.map(p => ({ value: p.id, label: p.plazo }))}
+                options={[
+                  { value: '', label: tipoDocId ? 'Seleccione plazo comercial...' : 'Primero elija Tipo de Documento' },
+                  ...plazosFiltrados.map(p => ({
+                    value: p.id,
+                    label: `${p.plazo} (${p.cuotas} cuota/s - ${p.irregular ? 'Irregular' : 'Regular'})`
+                  }))
+                ]}
               />
             </div>
           </Card>
 
-          {/* SECCIÓN 4: TOTALES */}
-          <Card className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+          {/* SECCIÓN 4: IMPORTES DE LA COMPRA */}
+          <Card className="p-6 space-y-6">
+            <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-brand-600" />
-              <h2 className="text-base font-bold text-slate-800">
-                Sección 4: Desglose de Totales
-              </h2>
-            </div>
+              <span>Sección 4: Importes Desglosados</span>
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
-                label={`Total Exento (${monedaAbrev})`}
+                label={`Importe Exento (${monedaAbrev})`}
                 type="number"
+                min="0"
                 value={totalExento}
                 onChange={(e) => setTotalExento(e.target.value)}
-                min="0"
-                step="any"
               />
+
               <Input
-                label={`Total Base Imponible (${monedaAbrev})`}
+                label={`Importe Base Grabado (${monedaAbrev})`}
                 type="number"
+                min="0"
                 value={totalBase}
                 onChange={(e) => setTotalBase(e.target.value)}
-                min="0"
-                step="any"
               />
+
               <Input
-                label={`Total Impuesto IVA (${monedaAbrev})`}
+                label={`Importe IVA (${monedaAbrev})`}
                 type="number"
+                min="0"
                 value={totalImpuesto}
                 onChange={(e) => setTotalImpuesto(e.target.value)}
-                min="0"
-                step="any"
               />
             </div>
 
-            {/* Visualización del Total Calculado en Grande */}
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex items-center justify-between mt-4">
               <div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">
-                  TOTAL A FACTURAR (AUTOCALCULADO)
-                </span>
-                <span className="text-[10px] font-semibold text-slate-500">
-                  Suma de Exento + Base + IVA
-                </span>
+                <span className="text-xs text-slate-500 uppercase tracking-widest font-bold">Total Factura Consolidado</span>
+                <p className="text-xs text-slate-400 mt-0.5">Suma automática de exento, base grabada e impuestos</p>
               </div>
-              <div className="text-right">
-                <span className="text-2xl font-black text-slate-900">
-                  {formatCurrency(totalFactura, monedaAbrev)}
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                isLoading={isLoading}
-                className="w-full md:w-auto flex items-center justify-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>Registrar Venta en Sistema</span>
-              </Button>
+              <span className="text-2xl font-black text-slate-800">
+                {formatCurrency(totalFactura, monedaAbrev)}
+              </span>
             </div>
           </Card>
+
+          {/* BOTÓN REGISTRAR */}
+          <div className="flex justify-end gap-3">
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isLoading}
+              className="flex items-center gap-2 shadow-brand-500/10 shadow-lg px-6"
+            >
+              <Save className="w-4 h-4" />
+              <span>Registrar Compra en Sistema</span>
+            </Button>
+          </div>
         </form>
       )}
     </div>

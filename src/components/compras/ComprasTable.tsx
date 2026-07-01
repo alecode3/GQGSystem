@@ -2,33 +2,33 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table } from '../ui/Table';
 import { Button } from '../ui/Button';
-import { Venta } from '../../types/venta';
-import { Cliente, Moneda, Plazo, TipoDocumento } from '../../types/catalogos';
+import { Compra } from '../../types/compra';
+import { Proveedor, Moneda, Plazo, TipoDocumento } from '../../types/catalogos';
 import { formatCurrency, formatInvoice } from '../../utils/formatters';
 import { formatDate } from '../../utils/dates';
 import { Eye, ShieldAlert } from 'lucide-react';
 
-interface VentasTableProps {
-  ventas: Venta[];
-  clientes: Cliente[];
+interface ComprasTableProps {
+  compras: Compra[];
+  proveedores: Proveedor[];
   monedas: Moneda[];
   plazos: Plazo[];
   tiposDoc: TipoDocumento[];
-  onSelectVenta?: (venta: Venta) => void;
+  onSelectCompra?: (compra: Compra) => void;
 }
 
-export const VentasTable: React.FC<VentasTableProps> = ({
-  ventas,
-  clientes,
+export const ComprasTable: React.FC<ComprasTableProps> = ({
+  compras,
+  proveedores,
   monedas,
   plazos,
   tiposDoc,
-  onSelectVenta
+  onSelectCompra
 }) => {
   const navigate = useNavigate();
 
-  const getClienteName = (id: number) => {
-    return clientes.find(c => c.id === id)?.ruc || `Cliente #${id}`;
+  const getProveedorName = (id: number) => {
+    return proveedores.find(p => p.id === id)?.ruc || `Proveedor #${id}`;
   };
 
   const getMonedaAbrev = (id: number) => {
@@ -43,19 +43,19 @@ export const VentasTable: React.FC<VentasTableProps> = ({
     return plazos.find(p => p.id === id)?.plazo || `Plazo #${id}`;
   };
 
-  if (ventas.length === 0) {
+  if (compras.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
         <ShieldAlert className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-        <h3 className="text-sm font-bold text-slate-700">Sin Ventas Registradas</h3>
-        <p className="text-xs text-slate-500 mt-1">Registra tu primera venta para verla listada en esta sección.</p>
+        <h3 className="text-sm font-bold text-slate-700">Sin Compras Registradas</h3>
+        <p className="text-xs text-slate-500 mt-1">Registra tu primera compra para verla listada en esta sección.</p>
         <Button
           variant="primary"
           size="sm"
           className="mt-4"
-          onClick={() => navigate('/ventas/nueva')}
+          onClick={() => navigate('/compras/nueva')}
         >
-          Registrar Nueva Venta
+          Registrar Nueva Compra
         </Button>
       </div>
     );
@@ -64,7 +64,7 @@ export const VentasTable: React.FC<VentasTableProps> = ({
   const headers = [
     'Documento / Factura',
     'Fecha',
-    'Cliente',
+    'Proveedor',
     'Tipo Documento',
     'Plazo Comercial',
     'Importe Total',
@@ -73,49 +73,49 @@ export const VentasTable: React.FC<VentasTableProps> = ({
 
   return (
     <Table headers={headers}>
-      {ventas.map((venta) => {
-        const currencyAbrev = getMonedaAbrev(venta.moneda_id);
+      {compras.map((compra) => {
+        const currencyAbrev = getMonedaAbrev(compra.moneda_id);
         return (
-          <tr key={venta.id} className="hover:bg-slate-50/50 transition-colors">
+          <tr key={compra.id} className="hover:bg-slate-50/50 transition-colors">
             {/* Factura & Timbrado */}
             <td className="px-6 py-4">
               <span className="block font-bold text-slate-800 leading-tight">
-                {formatInvoice(venta.serie, venta.nro_factura)}
+                {formatInvoice(compra.serie, compra.nro_factura)}
               </span>
               <span className="block text-[10px] font-semibold text-slate-400 mt-0.5">
-                Timbrado: {venta.timbrado}
+                Timbrado: {compra.timbrado}
               </span>
             </td>
 
             {/* Fecha Factura */}
             <td className="px-6 py-4 font-semibold text-slate-700">
-              {formatDate(venta.fecha_factura)}
+              {formatDate(compra.fecha_factura)}
             </td>
 
-            {/* Cliente */}
+            {/* Proveedor */}
             <td className="px-6 py-4 font-medium text-slate-800">
-              {getClienteName(venta.cliente_id)}
+              {getProveedorName(compra.proveedor_id)}
             </td>
 
             {/* Tipo Documento */}
             <td className="px-6 py-4">
               <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-md ${
-                venta.tipo_doc_id === 1 
+                compra.tipo_doc_id === 1 
                   ? 'bg-blue-50 text-blue-700 border border-blue-100' 
                   : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
               }`}>
-                {getTipoDocName(venta.tipo_doc_id)}
+                {getTipoDocName(compra.tipo_doc_id)}
               </span>
             </td>
 
             {/* Plazo */}
             <td className="px-6 py-4 text-xs font-semibold text-slate-600">
-              {getPlazoName(venta.plazo_id)}
+              {getPlazoName(compra.plazo_id)}
             </td>
 
             {/* Total Factura */}
             <td className="px-6 py-4 font-extrabold text-slate-900 text-right pr-12">
-              {formatCurrency(venta.total_factura, currencyAbrev)}
+              {formatCurrency(compra.total_factura, currencyAbrev)}
             </td>
 
             {/* Acciones */}
@@ -126,10 +126,10 @@ export const VentasTable: React.FC<VentasTableProps> = ({
                   size="sm"
                   className="flex items-center gap-1.5"
                   onClick={() => {
-                    if (onSelectVenta) {
-                      onSelectVenta(venta);
+                    if (onSelectCompra) {
+                      onSelectCompra(compra);
                     } else {
-                      navigate(`/cuentas-cobrar?venta_id=${venta.id}`);
+                      navigate(`/cuentas-pagar?compra_id=${compra.id}`);
                     }
                   }}
                 >

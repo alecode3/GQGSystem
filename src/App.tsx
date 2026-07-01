@@ -3,7 +3,10 @@ import { AppLayout } from './components/layout/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { VentasPage } from './pages/VentasPage';
 import { NuevaVentaPage } from './pages/NuevaVentaPage';
+import { ComprasPage } from './pages/ComprasPage';
+import { NuevaCompraPage } from './pages/NuevaCompraPage';
 import { CuentasCobrarPage } from './pages/CuentasCobrarPage';
+import { CuentasPagarPage } from './pages/CuentasPagarPage';
 import { PlazosPage } from './pages/PlazosPage';
 
 export const App = () => {
@@ -18,11 +21,18 @@ export const App = () => {
           <Route path="ventas" element={<VentasPage />} />
           <Route path="ventas/nueva" element={<NuevaVentaPage />} />
           
+          {/* Rutas de Compras */}
+          <Route path="compras" element={<ComprasPage />} />
+          <Route path="compras/nueva" element={<NuevaCompraPage />} />
+          
           {/* Rutas de Plazos */}
           <Route path="plazos" element={<PlazosPage />} />
           
           {/* Rutas de Cuentas a Cobrar */}
           <Route path="cuentas-cobrar" element={<CuentasCobrarPage />} />
+
+          {/* Rutas de Cuentas a Pagar */}
+          <Route path="cuentas-pagar" element={<CuentasPagarPage />} />
           
           {/* Fallback Redirection */}
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -31,5 +41,6 @@ export const App = () => {
     </BrowserRouter>
   );
 };
+
 
 export default App;

@@ -1,13 +1,19 @@
 import { supabase } from './supabaseClient';
-import { Cliente, Moneda, Deposito, TipoDocumento, Plazo } from '../types/catalogos';
+import { Cliente, Proveedor, Moneda, Deposito, TipoDocumento, Plazo } from '../types/catalogos';
 
 // MOCK DATA DE RESPALDO (En caso de que falle la conexión a Supabase)
 export const MOCK_CLIENTES: Cliente[] = [
-  { id: 1, razon_social: 'GQG System S.A.', ruc: '80012345-6', direccion: 'Av. España 1450, Asunción', telefono: '021-600700', activo: true },
-  { id: 2, razon_social: 'Distribuidora Oriental S.R.L.', ruc: '80054321-0', direccion: 'Ruta 7 Km 4, Ciudad del Este', telefono: '061-500600', activo: true },
-  { id: 3, razon_social: 'Comercial El Trébol S.A.', ruc: '80098765-4', direccion: 'Mariscal Estigarribia 450, Encarnación', telefono: '071-400300', activo: true },
-  { id: 4, razon_social: 'María Auxiliadora Comercial', ruc: '3456789-2', direccion: 'Gral. Aquino 980, Luque', telefono: '021-645312', activo: true },
-  { id: 5, razon_social: 'Supermercado Los Andes', ruc: '80112233-9', direccion: 'Mcal. López e Insaurralde, Fernando de la Mora', telefono: '021-505808', activo: true }
+  { id: 1, ruc: '80012345-6', direccion: 'Av. España 1450, Asunción', telefono: '021-600700', activo: true },
+  { id: 2, ruc: '80054321-0', direccion: 'Ruta 7 Km 4, Ciudad del Este', telefono: '061-500600', activo: true },
+  { id: 3, ruc: '80098765-4', direccion: 'Mariscal Estigarribia 450, Encarnación', telefono: '071-400300', activo: true },
+  { id: 4, ruc: '3456789-2', direccion: 'Gral. Aquino 980, Luque', telefono: '021-645312', activo: true },
+  { id: 5, ruc: '80112233-9', direccion: 'Mcal. López e Insaurralde, Fernando de la Mora', telefono: '021-505808', activo: true }
+];
+
+export const MOCK_PROVEEDORES: Proveedor[] = [
+  { id: 1, ruc: '90012345-0', direccion: 'Av. Artigas 1200, Asunción', telefono: '021-200300', activo: true },
+  { id: 2, ruc: '90054321-1', direccion: 'Av. Monseñor Rodríguez, CDE', telefono: '061-600100', activo: true },
+  { id: 3, ruc: '90098765-2', direccion: 'Ruta 1 Km 2, Encarnación', telefono: '071-300400', activo: true }
 ];
 
 export const MOCK_MONEDAS: Moneda[] = [
@@ -39,13 +45,28 @@ export const catalogosService = {
       const { data, error } = await supabase
         .from('clientes')
         .select('*')
-        .order('razon_social');
+        .order('ruc');
       
       if (error) throw error;
       return data || [];
     } catch (error) {
       console.warn('Falla al cargar clientes de Supabase. Usando mock data.', error);
       return MOCK_CLIENTES;
+    }
+  },
+
+  async getProveedores(): Promise<Proveedor[]> {
+    try {
+      const { data, error } = await supabase
+        .from('proveedores')
+        .select('*')
+        .order('ruc');
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.warn('Falla al cargar proveedores de Supabase. Usando mock data.', error);
+      return MOCK_PROVEEDORES;
     }
   },
 
@@ -109,3 +130,4 @@ export const catalogosService = {
     }
   }
 };
+
