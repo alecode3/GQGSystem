@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { Cliente, Proveedor, Moneda, Deposito, TipoDocumento, Plazo, PlazoDetalle } from '../types/catalogos';
+import { Producto } from '../types/producto';
 
 // MOCK DATA DE RESPALDO (En caso de que falle la conexión a Supabase)
 export const MOCK_CLIENTES: Cliente[] = [
@@ -38,6 +39,16 @@ export const MOCK_PLAZOS: Plazo[] = [
   { id: 3, plazo: 'Crédito Regular - 30/60/90 días', tipo_id: 2, cuotas: 3, irregular: false, activo: true },
   { id: 4, plazo: 'Crédito Irregular - 45/75 días', tipo_id: 2, cuotas: 2, irregular: true, activo: true },
   { id: 5, plazo: 'Crédito Irregular - 30/45/60 días', tipo_id: 2, cuotas: 3, irregular: true, activo: true }
+];
+
+export const MOCK_PRODUCTOS: Producto[] = [
+  { id: 1, codigo: 'ART-001', descripcion: 'Notebook HP 15"', precio_unitario: 3500000, tipo_iva: 'gravado', activo: true },
+  { id: 2, codigo: 'ART-002', descripcion: 'Monitor LED 24"', precio_unitario: 850000, tipo_iva: 'gravado', activo: true },
+  { id: 3, codigo: 'ART-003', descripcion: 'Teclado y Mouse Inalámbrico', precio_unitario: 180000, tipo_iva: 'gravado', activo: true },
+  { id: 4, codigo: 'ART-004', descripcion: 'Impresora Multifunción', precio_unitario: 1200000, tipo_iva: 'gravado', activo: true },
+  { id: 5, codigo: 'ART-005', descripcion: 'Cable de Red Cat6 (metro)', precio_unitario: 15000, tipo_iva: 'gravado', activo: true },
+  { id: 6, codigo: 'ART-006', descripcion: 'Libro Contabilidad Básica', precio_unitario: 95000, tipo_iva: 'exento', activo: true },
+  { id: 7, codigo: 'ART-007', descripcion: 'Servicio de Instalación', precio_unitario: 250000, tipo_iva: 'gravado', activo: true }
 ];
 
 export const MOCK_PLAZO_DETALLES: PlazoDetalle[] = [
@@ -137,6 +148,11 @@ export const catalogosService = {
       console.warn('Falla al cargar plazos de Supabase. Usando mock data.', error);
       return MOCK_PLAZOS;
     }
+  },
+
+  async getProductos(): Promise<Producto[]> {
+    // Catálogo de productos solo en frontend (no persiste líneas en BD; alimenta el desglose de totales)
+    return MOCK_PRODUCTOS.filter((p) => p.activo);
   },
 
   async getPlazoDetalles(plazoId: number): Promise<PlazoDetalle[]> {

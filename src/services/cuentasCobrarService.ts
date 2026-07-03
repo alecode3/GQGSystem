@@ -119,26 +119,61 @@ export const cuentasCobrarService = {
     }
   },
 
+  async registrarCobro(cuentaId: number, montoACobrar: number): Promise<CuentaCobrarDetalle | null> {
+    try {
+      const { data: cuenta, error: fetchError } = await supabase
+        .from('cuentas_cobrar')
+        .select('id, importe, cobrado')
+        .eq('id', cuentaId)
+        .single();
+
+      if (fetchError || !cuenta) throw fetchError || new Error('Cuota no encontrada');
+
+      const nuevoCobrado = Math.min(Number(cuenta.importe), Number(cuenta.cobrado) + montoACobrar);
+      const nuevoSaldo = Math.max(0, Number(cuenta.importe) - nuevoCobrado);
+      const nuevoEstado = nuevoSaldo === 0 ? 'COBRADO' : 'PENDIENTE';
+
+      const { error: updateError } = await supabase
+        .from('cuentas_cobrar')
+        .update({ cobrado: nuevoCobrado, saldo: nuevoSaldo, estado: nuevoEstado })
+        .eq('id', cuentaId);
+
+      if (updateError) throw updateError;
+
+      const { data: actualizada, error: viewError } = await supabase
+        .from('v_cuentas_cobrar_detalle')
+        .select('*')
+        .eq('cuenta_id', cuentaId)
+        .single();
+
+      if (viewError) throw viewError;
+      return actualizada;
+    } catch (error) {
+      console.warn('Falla al registrar cobro en Supabase. Usando localStorage.', error);
+      return this.registrarCobroOffline(cuentaId, montoACobrar);
+    }
+  },
+
   async registrarCobroOffline(cuentaId: number, montoACobrar: number): Promise<CuentaCobrarDetalle | null> {
     const cuentas = getLocalCuentas();
     const index = cuentas.findIndex((c) => c.cuenta_id === cuentaId);
-    
+
     if (index !== -1) {
       const c = cuentas[index];
       const nuevoCobrado = Math.min(c.importe, c.cobrado + montoACobrar);
       const nuevoSaldo = Math.max(0, c.importe - nuevoCobrado);
-      
+
       cuentas[index] = {
         ...c,
         cobrado: nuevoCobrado,
         saldo: nuevoSaldo,
         estado: nuevoSaldo === 0 ? 'COBRADO' : 'PENDIENTE'
       };
-      
+
       saveLocalCuentas(cuentas);
       return cuentas[index];
     }
-    
+
     return null;
   }
 };

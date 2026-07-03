@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
 import { cuentasCobrarService } from '../services/cuentasCobrarService';
 import { CuentaCobrarDetalle } from '../types/cuentaCobrar';
+import { ResumenClientesPanel, ResumenCliente } from '../components/cuentas/ResumenClientesPanel';
 import { Search, RefreshCw, X, Coins } from 'lucide-react';
 
 export const CuentasCobrarPage: React.FC = () => {
@@ -21,6 +22,7 @@ export const CuentasCobrarPage: React.FC = () => {
   // Filtros
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [clienteFilter, setClienteFilter] = useState<number | null>(null);
 
   const loadCuentas = async () => {
     setIsLoading(true);
@@ -40,7 +42,7 @@ export const CuentasCobrarPage: React.FC = () => {
 
   const handleCobrarSubmit = async (cuentaId: number, monto: number) => {
     try {
-      await cuentasCobrarService.registrarCobroOffline(cuentaId, monto);
+      await cuentasCobrarService.registrarCobro(cuentaId, monto);
       await loadCuentas(); // Recargar datos frescos
     } catch (e) {
       console.error(e);
@@ -53,9 +55,32 @@ export const CuentasCobrarPage: React.FC = () => {
   };
 
   // Filtrado final en memoria para búsqueda y dropdowns
+  const resumenesClientes: ResumenCliente[] = Object.values(
+    cuentas
+      .filter((c) => c.estado.toUpperCase() === 'PENDIENTE')
+      .reduce<Record<number, ResumenCliente>>((acc, c) => {
+        const id = c.cliente_id;
+        if (!acc[id]) {
+          acc[id] = {
+            cliente_id: id,
+            cliente: c.cliente,
+            cuotasPendientes: 0,
+            saldoTotal: 0,
+            moneda_abreviatura: c.moneda_abreviatura || 'PYG'
+          };
+        }
+        acc[id].cuotasPendientes += 1;
+        acc[id].saldoTotal += c.saldo;
+        return acc;
+      }, {})
+  ).sort((a, b) => b.saldoTotal - a.saldoTotal);
+
   const filteredCuentas = cuentas.filter((cuenta) => {
-    // 1. Filtrar por venta_id si existe el parámetro en la URL
     if (ventaIdParam && cuenta.venta_id !== Number(ventaIdParam)) {
+      return false;
+    }
+
+    if (clienteFilter && cuenta.cliente_id !== clienteFilter) {
       return false;
     }
 
@@ -147,6 +172,23 @@ export const CuentasCobrarPage: React.FC = () => {
           />
         </div>
       </Card>
+
+      {!ventaIdParam && (
+        <ResumenClientesPanel
+          resumenes={resumenesClientes}
+          clienteSeleccionado={clienteFilter}
+          onSelectCliente={(id) => setClienteFilter(clienteFilter === id ? null : id)}
+        />
+      )}
+
+      {clienteFilter && !ventaIdParam && (
+        <div className="gqg-alert bg-amber-50 border-amber-300 px-4 py-2 flex items-center justify-between text-xs font-semibold text-amber-900">
+          <span>Filtrando cuotas del cliente seleccionado</span>
+          <button onClick={() => setClienteFilter(null)} className="p-1 hover:bg-amber-100 rounded">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Vista detalle agrupada por factura (requerimiento del cliente) */}
       {mostrarDetalleFactura && cuentaCabecera ? (

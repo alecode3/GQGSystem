@@ -122,6 +122,26 @@ export const ventasService = {
     }
   },
 
+  async getSiguienteNroFactura(serie: string = '001-001'): Promise<number> {
+    try {
+      const { data, error } = await supabase
+        .from('ventas')
+        .select('nro_factura')
+        .eq('serie', serie)
+        .order('nro_factura', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      const maxNro = data?.[0]?.nro_factura ?? 44685;
+      return maxNro + 1;
+    } catch (error) {
+      console.warn('Falla al obtener siguiente nro de factura. Usando localStorage.', error);
+      const ventas = getLocalVentas().filter(v => v.serie === serie);
+      const maxNro = ventas.reduce((max, v) => (v.nro_factura > max ? v.nro_factura : max), 44685);
+      return maxNro + 1;
+    }
+  },
+
   async createVenta(payload: NuevaVentaPayload): Promise<Venta> {
     try {
       // Intentar insertar en Supabase

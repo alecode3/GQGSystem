@@ -5,7 +5,8 @@ import { Loading } from '../components/ui/Loading';
 import { Button } from '../components/ui/Button';
 import { catalogosService } from '../services/catalogosService';
 import { ventasService } from '../services/ventasService';
-import { Cliente, Moneda, Deposito, TipoDocumento, Plazo } from '../types/catalogos';
+import { Cliente, Moneda, TipoDocumento, Plazo } from '../types/catalogos';
+import { Producto } from '../types/producto';
 import { NuevaVentaPayload } from '../types/venta';
 import { ArrowLeft } from 'lucide-react';
 
@@ -13,28 +14,30 @@ export const NuevaVentaPage: React.FC = () => {
   const navigate = useNavigate();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [monedas, setMonedas] = useState<Moneda[]>([]);
-  const [depositos, setDepositos] = useState<Deposito[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
   const [tiposDoc, setTiposDoc] = useState<TipoDocumento[]>([]);
   const [plazos, setPlazos] = useState<Plazo[]>([]);
+  const [siguienteNroFactura, setSiguienteNroFactura] = useState(44686);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCatalogs = async () => {
       try {
-        const [clientesData, monedasData, depositosData, tiposDocData, plazosData] = await Promise.all([
+        const [clientesData, monedasData, productosData, tiposDocData, plazosData, nextNro] = await Promise.all([
           catalogosService.getClientes(),
           catalogosService.getMonedas(),
-          catalogosService.getDepositos(),
+          catalogosService.getProductos(),
           catalogosService.getTiposDocumento(),
-          catalogosService.getPlazos()
+          catalogosService.getPlazos(),
+          ventasService.getSiguienteNroFactura('001-001')
         ]);
-        
-        // Filtrar activos para evitar combos sucios
+
         setClientes(clientesData.filter(c => c.activo));
         setMonedas(monedasData.filter(m => m.activo));
-        setDepositos(depositosData.filter(d => d.activo));
+        setProductos(productosData);
         setTiposDoc(tiposDocData.filter(t => t.activo));
         setPlazos(plazosData.filter(p => p.activo));
+        setSiguienteNroFactura(nextNro);
       } catch (e) {
         console.error('Error al cargar catálogos en el formulario', e);
       } finally {
@@ -46,17 +49,15 @@ export const NuevaVentaPage: React.FC = () => {
   }, []);
 
   const handleRegisterVentaSubmit = async (payload: NuevaVentaPayload) => {
-    // Inserta la venta en Supabase o simulador local
     return await ventasService.createVenta(payload);
   };
 
   if (isLoading) {
-    return <Loading message="Cargando catálogos de facturación (Clientes, Plazos, etc.)..." fullPage />;
+    return <Loading message="Cargando catálogos de facturación..." fullPage />;
   }
 
   return (
     <div className="space-y-6">
-      {/* Navigation and title */}
       <div className="flex items-center gap-4">
         <Button
           variant="secondary"
@@ -71,19 +72,18 @@ export const NuevaVentaPage: React.FC = () => {
             Registrar Nueva Venta
           </h2>
           <p className="text-sm text-slate-500 font-medium">
-            Emita la factura y seleccione la condición de pago: Contado o Crédito con plan de cuotas.
+            Agregue productos, el desglose se calcula automáticamente y seleccione Contado o Crédito.
           </p>
         </div>
       </div>
 
-
-      {/* Formulario */}
       <VentaForm
         clientes={clientes}
         monedas={monedas}
-        depositos={depositos}
+        productos={productos}
         tiposDoc={tiposDoc}
         plazos={plazos}
+        siguienteNroFactura={siguienteNroFactura}
         onSubmit={handleRegisterVentaSubmit}
       />
     </div>

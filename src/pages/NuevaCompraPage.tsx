@@ -5,7 +5,8 @@ import { Loading } from '../components/ui/Loading';
 import { Button } from '../components/ui/Button';
 import { catalogosService } from '../services/catalogosService';
 import { comprasService } from '../services/comprasService';
-import { Proveedor, Moneda, Deposito, TipoDocumento, Plazo } from '../types/catalogos';
+import { Proveedor, Moneda, TipoDocumento, Plazo } from '../types/catalogos';
+import { Producto } from '../types/producto';
 import { NuevaCompraPayload } from '../types/compra';
 import { ArrowLeft } from 'lucide-react';
 
@@ -13,30 +14,32 @@ export const NuevaCompraPage: React.FC = () => {
   const navigate = useNavigate();
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [monedas, setMonedas] = useState<Moneda[]>([]);
-  const [depositos, setDepositos] = useState<Deposito[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
   const [tiposDoc, setTiposDoc] = useState<TipoDocumento[]>([]);
   const [plazos, setPlazos] = useState<Plazo[]>([]);
+  const [siguienteNroFactura, setSiguienteNroFactura] = useState(1025);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCatalogs = async () => {
       try {
-        const [proveedoresData, monedasData, depositosData, tiposDocData, plazosData] = await Promise.all([
+        const [proveedoresData, monedasData, productosData, tiposDocData, plazosData, nextNro] = await Promise.all([
           catalogosService.getProveedores(),
           catalogosService.getMonedas(),
-          catalogosService.getDepositos(),
+          catalogosService.getProductos(),
           catalogosService.getTiposDocumento(),
-          catalogosService.getPlazos()
+          catalogosService.getPlazos(),
+          comprasService.getSiguienteNroFactura('001-001')
         ]);
-        
-        // Filtrar activos para evitar combos sucios
+
         setProveedores(proveedoresData.filter(p => p.activo));
         setMonedas(monedasData.filter(m => m.activo));
-        setDepositos(depositosData.filter(d => d.activo));
+        setProductos(productosData);
         setTiposDoc(tiposDocData.filter(t => t.activo));
         setPlazos(plazosData.filter(p => p.activo));
+        setSiguienteNroFactura(nextNro);
       } catch (e) {
-        console.error('Error al cargar catálogos en el formulario', e);
+        console.error('Error al cargar catálogos', e);
       } finally {
         setIsLoading(false);
       }
@@ -45,46 +48,32 @@ export const NuevaCompraPage: React.FC = () => {
     fetchCatalogs();
   }, []);
 
-  const handleRegisterCompraSubmit = async (payload: NuevaCompraPayload) => {
-    // Inserta la compra en Supabase o simulador local
-    return await comprasService.createCompra(payload);
-  };
-
   if (isLoading) {
-    return <Loading message="Cargando catálogos de facturación (Proveedores, Plazos, etc.)..." fullPage />;
+    return <Loading message="Cargando catálogos de compras..." fullPage />;
   }
 
   return (
     <div className="space-y-6">
-      {/* Navigation and title */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => navigate('/compras')}
-          className="p-2 border border-slate-200"
-        >
+        <Button variant="secondary" size="sm" onClick={() => navigate('/compras')} className="p-2 border border-slate-200">
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-            Registrar Nueva Compra
-          </h2>
+          <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Registrar Nueva Compra</h2>
           <p className="text-sm text-slate-500 font-medium">
-            Registre la compra y seleccione la condición de pago: Contado o Crédito con plan de cuotas.
+            Agregue productos, el desglose se calcula automáticamente y seleccione Contado o Crédito.
           </p>
         </div>
       </div>
 
-
-      {/* Formulario */}
       <CompraForm
         proveedores={proveedores}
         monedas={monedas}
-        depositos={depositos}
+        productos={productos}
         tiposDoc={tiposDoc}
         plazos={plazos}
-        onSubmit={handleRegisterCompraSubmit}
+        siguienteNroFactura={siguienteNroFactura}
+        onSubmit={(payload: NuevaCompraPayload) => comprasService.createCompra(payload)}
       />
     </div>
   );

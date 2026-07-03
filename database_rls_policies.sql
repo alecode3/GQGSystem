@@ -108,8 +108,16 @@ CREATE POLICY "anon_insert_compras"
 CREATE POLICY "anon_select_cuentas_cobrar"
     ON cuentas_cobrar FOR SELECT TO anon, authenticated USING (true);
 
+CREATE POLICY "anon_update_cuentas_cobrar"
+    ON cuentas_cobrar FOR UPDATE TO anon, authenticated
+    USING (true) WITH CHECK (true);
+
 CREATE POLICY "anon_select_cuentas_pagar"
     ON cuentas_pagar FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "anon_update_cuentas_pagar"
+    ON cuentas_pagar FOR UPDATE TO anon, authenticated
+    USING (true) WITH CHECK (true);
 
 -- -----------------------------------------------------------------------------
 -- Permisos explícitos para el rol anon (por si las tablas se crearon por SQL)
@@ -120,7 +128,7 @@ GRANT SELECT ON clientes, proveedores, monedas, depositos, tipos_documento TO an
 GRANT SELECT, INSERT, UPDATE, DELETE ON plazos TO anon, authenticated;
 GRANT SELECT, INSERT, DELETE ON plazo_detalles TO anon, authenticated;
 GRANT SELECT, INSERT ON ventas, compras TO anon, authenticated;
-GRANT SELECT ON cuentas_cobrar, cuentas_pagar TO anon, authenticated;
+GRANT SELECT, UPDATE ON cuentas_cobrar, cuentas_pagar TO anon, authenticated;
 
 -- Las vistas heredan acceso vía las tablas base; asegurar SELECT en vistas:
 GRANT SELECT ON v_cuentas_cobrar_detalle, v_cuentas_pagar_detalle TO anon, authenticated;

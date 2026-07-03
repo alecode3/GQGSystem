@@ -48,23 +48,26 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
   const scheme = colorSchemes[color];
 
   return (
-    <Card hoverable className="flex items-center justify-between border-l-[6px] border-l-brand-600 relative overflow-hidden shadow-xl shadow-slate-300/70">
-      <div className="space-y-2">
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">
+    <Card
+      hoverable
+      className="flex items-start justify-between gap-3 border-l-[6px] border-l-brand-600 min-h-[7.5rem] shadow-lg shadow-slate-200/60"
+    >
+      <div className="space-y-1.5 min-w-0 flex-1">
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-tight">
           {title}
         </span>
-        <h3 className="text-3xl font-extrabold text-slate-800 tracking-tight">
+        <h3 className="text-xl lg:text-2xl font-extrabold text-slate-800 tracking-tight break-words leading-snug">
           {value}
         </h3>
         {description && (
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-[11px] text-slate-500 font-medium leading-tight">
             {description}
           </p>
         )}
       </div>
-      
-      <div className={`p-3.5 rounded-2xl border-2 ${scheme.bg} shadow-md shadow-slate-200/80`}>
-        <Icon className="w-6 h-6" />
+
+      <div className={`p-2.5 rounded-xl border-2 shrink-0 ${scheme.bg}`}>
+        <Icon className="w-5 h-5" />
       </div>
     </Card>
   );

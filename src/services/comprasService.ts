@@ -104,6 +104,26 @@ export const comprasService = {
     }
   },
 
+  async getSiguienteNroFactura(serie: string = '001-001'): Promise<number> {
+    try {
+      const { data, error } = await supabase
+        .from('compras')
+        .select('nro_factura')
+        .eq('serie', serie)
+        .order('nro_factura', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      const maxNro = data?.[0]?.nro_factura ?? 1024;
+      return maxNro + 1;
+    } catch (error) {
+      console.warn('Falla al obtener siguiente nro de compra. Usando localStorage.', error);
+      const compras = getLocalCompras().filter(c => c.serie === serie);
+      const maxNro = compras.reduce((max, c) => (c.nro_factura > max ? c.nro_factura : max), 1024);
+      return maxNro + 1;
+    }
+  },
+
   async createCompra(payload: NuevaCompraPayload): Promise<Compra> {
     try {
       // Intentar insertar en Supabase

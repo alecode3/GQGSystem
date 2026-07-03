@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SummaryCard } from '../components/dashboard/SummaryCard';
-import { CuentasCobrarTable } from '../components/cuentas/CuentasCobrarTable';
-import { CuentasPagarTable } from '../components/cuentas/CuentasPagarTable';
+import { VencimientosPreview } from '../components/dashboard/VencimientosPreview';
 import { Loading } from '../components/ui/Loading';
 import { Button } from '../components/ui/Button';
 import { ventasService } from '../services/ventasService';
@@ -47,32 +46,13 @@ export const DashboardPage: React.FC = () => {
     fetchDashboardData();
   }, []);
 
-  const handleCobrarClick = async (cuentaId: number, monto: number) => {
-    try {
-      await cuentasCobrarService.registrarCobroOffline(cuentaId, monto);
-      await fetchDashboardData(); // Recargar datos
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handlePagarClick = async (cuentaId: number, monto: number) => {
-    try {
-      await cuentasPagarService.registrarPagoOffline(cuentaId, monto);
-      await fetchDashboardData(); // Recargar datos
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   if (isLoading) {
     return <Loading message="Cargando panel de control consolidado..." fullPage />;
   }
 
-  // Agregadores en Guaraníes (PYG) de manera predeterminada para el panel principal
   const totalVentasSum = ventas.reduce((acc, v) => acc + v.total_factura, 0);
   const totalComprasSum = compras.reduce((acc, c) => acc + c.total_factura, 0);
-  
+
   const totalCobrarSum = cuentasCobrar
     .filter(c => c.estado.toUpperCase() === 'PENDIENTE')
     .reduce((acc, c) => acc + c.saldo, 0);
@@ -86,31 +66,30 @@ export const DashboardPage: React.FC = () => {
   const totalCobrarCount = cuentasCobrar.filter(c => c.estado.toUpperCase() === 'PENDIENTE').length;
   const totalPagarCount = cuentasPagar.filter(c => c.estado.toUpperCase() === 'PENDIENTE').length;
 
-  // Filtrar las próximas 3 cuentas de cada tipo que vencen pronto
-  const proximasCuentasCobrar = cuentasCobrar
+  const proximasCuentasCobrar = [...cuentasCobrar]
     .filter(c => c.estado.toUpperCase() === 'PENDIENTE')
+    .sort((a, b) => new Date(a.vence).getTime() - new Date(b.vence).getTime())
     .slice(0, 3);
 
-  const proximasCuentasPagar = cuentasPagar
+  const proximasCuentasPagar = [...cuentasPagar]
     .filter(c => c.estado.toUpperCase() === 'PENDIENTE')
+    .sort((a, b) => new Date(a.vence).getTime() - new Date(b.vence).getTime())
     .slice(0, 3);
 
-  // Margen contable estimado
   const balanceEstimado = totalVentasSum - totalComprasSum;
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
             Dashboard Corporativo
           </h2>
           <p className="text-sm text-slate-500 font-medium">
-            Resumen contable y control de saldos (Cuentas por Cobrar y por Pagar) de GQG System.
+            Resumen contable y control de saldos de GQG System.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="secondary"
             onClick={() => navigate('/compras/nueva')}
@@ -130,31 +109,30 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* METRIC CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <SummaryCard
           title="Total Facturado (Ventas)"
           value={formatCurrency(totalVentasSum, 'PYG')}
           icon={Receipt}
           color="blue"
-          description={`${ventas.length} ventas registradas`}
+          description={`${ventas.length} ventas`}
         />
         <SummaryCard
           title="Total Adquirido (Compras)"
           value={formatCurrency(totalComprasSum, 'PYG')}
           icon={ShoppingBag}
           color="slate"
-          description={`${compras.length} compras registradas`}
+          description={`${compras.length} compras`}
         />
         <SummaryCard
-          title="Cuentas a Cobrar (Saldo)"
+          title="Cuentas a Cobrar"
           value={formatCurrency(totalCobrarSum, 'PYG')}
           icon={Coins}
           color="amber"
           description={`${totalCobrarCount} cuotas pendientes`}
         />
         <SummaryCard
-          title="Cuentas a Pagar (Saldo)"
+          title="Cuentas a Pagar"
           value={formatCurrency(totalPagarSum, 'PYG')}
           icon={CreditCard}
           color="red"
@@ -162,78 +140,93 @@ export const DashboardPage: React.FC = () => {
         />
       </div>
 
-      {/* BALANCE Y RENDIMIENTO */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-2xl shadow-slate-900/40 flex flex-col md:flex-row md:items-center justify-between gap-6 border-2 border-slate-700">
-        <div className="space-y-1.5">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Resultado Operativo Neto (Margen Facturado)</span>
-          <h3 className={`text-3xl font-black ${balanceEstimado >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+      <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-5 border-2 border-slate-700">
+        <div className="space-y-1">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+            Margen Operativo Estimado
+          </span>
+          <h3 className={`text-2xl font-black ${balanceEstimado >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {formatCurrency(balanceEstimado, 'PYG')}
           </h3>
-          <p className="text-xs text-slate-400">Diferencia entre facturación total de ventas y compras.</p>
+          <p className="text-xs text-slate-400">Ventas menos compras facturadas.</p>
         </div>
-        <div className="flex gap-4">
-          <div className="bg-slate-800/80 px-5 py-3 rounded-xl border-2 border-slate-600 shadow-lg shadow-black/30">
-            <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Flujo Cobrado</span>
-            <span className="text-base font-bold text-emerald-400">{formatCurrency(totalCobradoSum, 'PYG')}</span>
+        <div className="flex flex-wrap gap-3">
+          <div className="bg-slate-800/80 px-4 py-2.5 rounded-xl border border-slate-600 min-w-[140px]">
+            <span className="text-[10px] text-slate-400 font-bold block uppercase">Cobrado</span>
+            <span className="text-sm font-bold text-emerald-400">{formatCurrency(totalCobradoSum, 'PYG')}</span>
           </div>
-          <div className="bg-slate-800/80 px-5 py-3 rounded-xl border-2 border-slate-600 shadow-lg shadow-black/30">
-            <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Flujo Pagado</span>
-            <span className="text-base font-bold text-rose-400">{formatCurrency(totalPagadoSum, 'PYG')}</span>
+          <div className="bg-slate-800/80 px-4 py-2.5 rounded-xl border border-slate-600 min-w-[140px]">
+            <span className="text-[10px] text-slate-400 font-bold block uppercase">Pagado</span>
+            <span className="text-sm font-bold text-rose-400">{formatCurrency(totalPagadoSum, 'PYG')}</span>
           </div>
         </div>
       </div>
 
-      {/* DETALLE CRUZADO DE VENCIMIENTOS */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {/* Cuentas a Cobrar */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-slate-300 pb-3">
-            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between border-b-2 border-slate-300 pb-2">
+            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
               <Coins className="w-5 h-5 text-amber-500" />
-              <span>Próximos Cobros (Cuentas a Cobrar)</span>
+              <span>Próximos Cobros</span>
             </h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/cuentas-cobrar')}
-              className="text-brand-650 hover:text-brand-700 font-bold flex items-center gap-1"
+              className="text-brand-650 font-bold flex items-center gap-1"
             >
-              <span>Ver todos</span>
+              <span>Gestionar</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
-
-          <CuentasCobrarTable
-            cuentas={proximasCuentasCobrar}
-            onCobrarClick={handleCobrarClick}
+          <VencimientosPreview
+            tipo="cobro"
+            emptyLabel="Sin cuotas por cobrar"
+            items={proximasCuentasCobrar.map((c) => ({
+              id: c.cuenta_id,
+              factura: c.factura,
+              entidad: c.cliente,
+              cuota_texto: c.cuota_texto,
+              vence: c.vence,
+              saldo: c.saldo,
+              estado: c.estado,
+              moneda_abreviatura: c.moneda_abreviatura
+            }))}
           />
         </div>
 
-        {/* Cuentas a Pagar */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-slate-300 pb-3">
-            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between border-b-2 border-slate-300 pb-2">
+            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-red-500" />
-              <span>Próximos Pagos (Cuentas a Pagar)</span>
+              <span>Próximos Pagos</span>
             </h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/cuentas-pagar')}
-              className="text-brand-650 hover:text-brand-700 font-bold flex items-center gap-1"
+              className="text-brand-650 font-bold flex items-center gap-1"
             >
-              <span>Ver todos</span>
+              <span>Gestionar</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
-
-          <CuentasPagarTable
-            cuentas={proximasCuentasPagar}
-            onPagarClick={handlePagarClick}
+          <VencimientosPreview
+            tipo="pago"
+            emptyLabel="Sin cuotas por pagar"
+            items={proximasCuentasPagar.map((c) => ({
+              id: c.cuenta_id,
+              factura: c.factura,
+              entidad: c.proveedor,
+              cuota_texto: c.cuota_texto,
+              vence: c.vence,
+              saldo: c.saldo,
+              estado: c.estado,
+              moneda_abreviatura: c.moneda_abreviatura
+            }))}
           />
         </div>
       </div>
     </div>
   );
 };
-

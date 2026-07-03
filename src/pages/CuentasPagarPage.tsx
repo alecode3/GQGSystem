@@ -40,7 +40,7 @@ export const CuentasPagarPage: React.FC = () => {
 
   const handlePagarSubmit = async (cuentaId: number, monto: number) => {
     try {
-      await cuentasPagarService.registrarPagoOffline(cuentaId, monto);
+      await cuentasPagarService.registrarPago(cuentaId, monto);
       await loadCuentas(); // Recargar datos frescos
     } catch (e) {
       console.error(e);

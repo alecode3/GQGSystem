@@ -121,27 +121,61 @@ export const cuentasPagarService = {
     }
   },
 
-  // Simulación para permitir pagar una cuota de forma offline
+  async registrarPago(cuentaId: number, montoAPagar: number): Promise<CuentaPagarDetalle | null> {
+    try {
+      const { data: cuenta, error: fetchError } = await supabase
+        .from('cuentas_pagar')
+        .select('id, importe, pagado')
+        .eq('id', cuentaId)
+        .single();
+
+      if (fetchError || !cuenta) throw fetchError || new Error('Cuota no encontrada');
+
+      const nuevoPagado = Math.min(Number(cuenta.importe), Number(cuenta.pagado) + montoAPagar);
+      const nuevoSaldo = Math.max(0, Number(cuenta.importe) - nuevoPagado);
+      const nuevoEstado = nuevoSaldo === 0 ? 'PAGADO' : 'PENDIENTE';
+
+      const { error: updateError } = await supabase
+        .from('cuentas_pagar')
+        .update({ pagado: nuevoPagado, saldo: nuevoSaldo, estado: nuevoEstado })
+        .eq('id', cuentaId);
+
+      if (updateError) throw updateError;
+
+      const { data: actualizada, error: viewError } = await supabase
+        .from('v_cuentas_pagar_detalle')
+        .select('*')
+        .eq('cuenta_id', cuentaId)
+        .single();
+
+      if (viewError) throw viewError;
+      return actualizada;
+    } catch (error) {
+      console.warn('Falla al registrar pago en Supabase. Usando localStorage.', error);
+      return this.registrarPagoOffline(cuentaId, montoAPagar);
+    }
+  },
+
   async registrarPagoOffline(cuentaId: number, montoAPagar: number): Promise<CuentaPagarDetalle | null> {
     const cuentas = getLocalCuentasPagar();
     const index = cuentas.findIndex(c => c.cuenta_id === cuentaId);
-    
+
     if (index !== -1) {
       const c = cuentas[index];
       const nuevoPagado = Math.min(c.importe, c.pagado + montoAPagar);
       const nuevoSaldo = Math.max(0, c.importe - nuevoPagado);
-      
+
       cuentas[index] = {
         ...c,
         pagado: nuevoPagado,
         saldo: nuevoSaldo,
         estado: nuevoSaldo === 0 ? 'PAGADO' : 'PENDIENTE'
       };
-      
+
       saveLocalCuentasPagar(cuentas);
       return cuentas[index];
     }
-    
+
     return null;
   }
 };
