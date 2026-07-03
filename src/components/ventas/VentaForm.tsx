@@ -8,7 +8,7 @@ import { Cliente, Moneda, Deposito, TipoDocumento, Plazo } from '../../types/cat
 import { NuevaVentaPayload } from '../../types/venta';
 import { CuentaCobrarDetalle } from '../../types/cuentaCobrar';
 import { cuentasCobrarService } from '../../services/cuentasCobrarService';
-import { formatCurrency, formatInvoice } from '../../utils/formatters';
+import { formatCurrency, formatInvoice, getClienteNombreByRuc } from '../../utils/formatters';
 import { CondicionPagoSection } from '../shared/CondicionPagoSection';
 import { CuentaDetallePanel } from '../cuentas/CuentaDetallePanel';
 import { Save, PlusCircle, CheckCircle, Calendar, DollarSign, Printer } from 'lucide-react';
@@ -319,7 +319,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
                 onChange={(e) => setClienteId(e.target.value)}
                 placeholder="Seleccione un cliente..."
                 required
-                options={clientes.map(c => ({ value: c.id, label: `${c.ruc}` }))}
+                options={clientes.map(c => ({ value: c.id, label: getClienteNombreByRuc(c.ruc) }))}
               />
               <Select
                 label="Depósito Comercial"
