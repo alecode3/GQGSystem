@@ -28,8 +28,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         ref={ref}
         id={inputId}
         type={type}
-        className={`w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/25 focus:border-brand-500 placeholder:text-slate-400 ${
-          error ? 'border-red-300 bg-red-50/20 focus:ring-red-500/25 focus:border-red-500' : ''
+        className={`w-full px-4 py-2.5 text-sm bg-slate-50 gqg-field rounded-xl transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 focus:shadow-md placeholder:text-slate-400 ${
+          error ? 'border-red-400 bg-red-50/30 focus:ring-red-500/30 focus:border-red-500' : ''
         } ${className}`}
         {...props}
       />

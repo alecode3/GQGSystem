@@ -11,12 +11,12 @@ export const Sidebar: React.FC = () => {
     { to: '/compras', label: 'Ver Compras', icon: ShoppingBag },
     { to: '/compras/nueva', label: 'Registrar Compra', icon: PlusCircle },
     { to: '/cuentas-pagar', label: 'Cuentas a Pagar', icon: CreditCard },
-    { to: '/plazos', label: 'ABM Plazos', icon: CalendarDays }
+    { to: '/plazos', label: 'Config. de Plazos', icon: CalendarDays }
   ];
 
 
   return (
-    <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen fixed left-0 top-0 z-30 shadow-xl border-r border-slate-800">
+    <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen fixed left-0 top-0 z-30 shadow-2xl shadow-slate-900/50 border-r-2 border-slate-700">
       {/* Brand Header */}
       <div className="p-6 border-b border-slate-800 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/25">

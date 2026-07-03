@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CuentasCobrarTable } from '../components/cuentas/CuentasCobrarTable';
+import { CuentaDetallePanel } from '../components/cuentas/CuentaDetallePanel';
 import { Loading } from '../components/ui/Loading';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -71,6 +72,10 @@ export const CuentasCobrarPage: React.FC = () => {
     return clientName.includes(query) || facturaStr.includes(query);
   });
 
+  // Vista detalle por factura (mockup del requerimiento)
+  const mostrarDetalleFactura = Boolean(ventaIdParam) && filteredCuentas.length > 0;
+  const cuentaCabecera = filteredCuentas[0];
+
   if (isLoading) {
     return <Loading message="Consolidando cuentas a cobrar desde la vista SQL..." fullPage />;
   }
@@ -101,7 +106,7 @@ export const CuentasCobrarPage: React.FC = () => {
 
       {/* Alerta de Filtro de Venta Activo */}
       {ventaIdParam && (
-        <div className="bg-brand-50 border border-brand-200 px-4 py-3 rounded-2xl flex items-center justify-between animate-fade-in">
+        <div className="gqg-alert bg-brand-50 border-brand-300 px-4 py-3 shadow-brand-200/50 flex items-center justify-between animate-fade-in">
           <div className="flex items-center gap-2 text-brand-900 text-xs font-semibold">
             <Coins className="w-4 h-4 text-brand-600" />
             <span>
@@ -143,11 +148,30 @@ export const CuentasCobrarPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Tabla de Resultados */}
-      <CuentasCobrarTable
-        cuentas={filteredCuentas}
-        onCobrarClick={handleCobrarSubmit}
-      />
+      {/* Vista detalle agrupada por factura (requerimiento del cliente) */}
+      {mostrarDetalleFactura && cuentaCabecera ? (
+        <CuentaDetallePanel
+          titulo="Cuentas a Cobrar"
+          entidadLabel="Cliente"
+          entidad={cuentaCabecera.cliente}
+          factura={cuentaCabecera.factura}
+          fecha={cuentaCabecera.fecha_factura}
+          moneda={cuentaCabecera.moneda}
+          cuotasPlan={cuentaCabecera.plazo}
+          monedaAbrev={cuentaCabecera.moneda_abreviatura || 'PYG'}
+          filas={filteredCuentas.map((c) => ({
+            cuota_texto: c.cuota_texto,
+            importe: c.importe,
+            vence: c.vence,
+            pagado: c.cobrado
+          }))}
+        />
+      ) : (
+        <CuentasCobrarTable
+          cuentas={filteredCuentas}
+          onCobrarClick={handleCobrarSubmit}
+        />
+      )}
     </div>
   );
 };

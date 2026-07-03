@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CuentasPagarTable } from '../components/cuentas/CuentasPagarTable';
+import { CuentaDetallePanel } from '../components/cuentas/CuentaDetallePanel';
 import { Loading } from '../components/ui/Loading';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -71,6 +72,9 @@ export const CuentasPagarPage: React.FC = () => {
     return providerName.includes(query) || facturaStr.includes(query);
   });
 
+  const mostrarDetalleFactura = Boolean(compraIdParam) && filteredCuentas.length > 0;
+  const cuentaCabecera = filteredCuentas[0];
+
   if (isLoading) {
     return <Loading message="Consolidando cuentas a pagar desde la vista SQL..." fullPage />;
   }
@@ -101,7 +105,7 @@ export const CuentasPagarPage: React.FC = () => {
 
       {/* Alerta de Filtro de Compra Activo */}
       {compraIdParam && (
-        <div className="bg-brand-50 border border-brand-200 px-4 py-3 rounded-2xl flex items-center justify-between animate-fade-in">
+        <div className="gqg-alert bg-brand-50 border-brand-300 px-4 py-3 shadow-brand-200/50 flex items-center justify-between animate-fade-in">
           <div className="flex items-center gap-2 text-brand-900 text-xs font-semibold">
             <Coins className="w-4 h-4 text-brand-600" />
             <span>
@@ -143,11 +147,30 @@ export const CuentasPagarPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Tabla de Resultados */}
-      <CuentasPagarTable
-        cuentas={filteredCuentas}
-        onPagarClick={handlePagarSubmit}
-      />
+      {mostrarDetalleFactura && cuentaCabecera ? (
+        <CuentaDetallePanel
+          titulo="Cuentas a Pagar"
+          entidadLabel="Proveedor"
+          entidad={cuentaCabecera.proveedor}
+          factura={cuentaCabecera.factura}
+          fecha={cuentaCabecera.fecha_factura}
+          moneda={cuentaCabecera.moneda}
+          cuotasPlan={cuentaCabecera.plazo}
+          monedaAbrev={cuentaCabecera.moneda_abreviatura || 'PYG'}
+          pagadoLabel="Pagado"
+          filas={filteredCuentas.map((c) => ({
+            cuota_texto: c.cuota_texto,
+            importe: c.importe,
+            vence: c.vence,
+            pagado: c.pagado
+          }))}
+        />
+      ) : (
+        <CuentasPagarTable
+          cuentas={filteredCuentas}
+          onPagarClick={handlePagarSubmit}
+        />
+      )}
     </div>
   );
 };

@@ -89,8 +89,8 @@ export const PlazoForm: React.FC<PlazoFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-      <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+    <div className="gqg-panel overflow-hidden shadow-xl">
+      <div className="bg-slate-50 px-6 py-4 border-b-2 border-slate-300 flex items-center justify-between">
         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
           <CalendarDays className="w-5 h-5 text-brand-600" />
           {initialPlazo ? 'Editar Plazo' : 'Nuevo Plazo'}
@@ -132,7 +132,7 @@ export const PlazoForm: React.FC<PlazoFormProps> = ({
             required
           />
           
-          <div className="flex items-center gap-2 h-11 px-3 border border-slate-200 rounded-lg bg-slate-50">
+          <div className="flex items-center gap-2 h-11 px-3 border-2 border-slate-300 rounded-lg bg-slate-50 shadow-sm">
             <input
               type="checkbox"
               id="irregular"
@@ -148,7 +148,7 @@ export const PlazoForm: React.FC<PlazoFormProps> = ({
             </label>
           </div>
 
-          <div className="flex items-center gap-2 h-11 px-3 border border-slate-200 rounded-lg bg-slate-50">
+          <div className="flex items-center gap-2 h-11 px-3 border-2 border-slate-300 rounded-lg bg-slate-50 shadow-sm">
             <input
               type="checkbox"
               id="activo"
@@ -164,13 +164,13 @@ export const PlazoForm: React.FC<PlazoFormProps> = ({
 
         {/* Sección Dinámica para Cuotas Irregulares */}
         {irregular && (
-          <div className="mt-6 p-4 bg-brand-50 rounded-xl border border-brand-100">
+          <div className="mt-6 p-4 bg-brand-50 rounded-xl border-2 border-brand-200 shadow-md">
             <h4 className="text-sm font-bold text-brand-800 mb-3 uppercase tracking-wider">
               Configuración de Días por Cuota
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {diasPorCuota.map((detalle, idx) => (
-                <div key={idx} className="bg-white p-3 rounded-lg border border-brand-200 shadow-sm relative">
+                <div key={idx} className="bg-white p-3 rounded-lg border-2 border-brand-300 shadow-md shadow-brand-100/80 relative">
                   <span className="absolute -top-2 -left-2 bg-brand-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
                     {detalle.cuota}
                   </span>

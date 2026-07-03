@@ -34,8 +34,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
       <select
         ref={ref}
         id={selectId}
-        className={`w-full px-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/25 focus:border-brand-500 appearance-none bg-no-repeat bg-[right_1rem_center] cursor-pointer ${
-          error ? 'border-red-300 bg-red-50/20 focus:ring-red-500/25 focus:border-red-500' : ''
+        className={`w-full px-4 py-2.5 text-sm bg-slate-50 gqg-field rounded-xl transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 focus:shadow-md appearance-none bg-no-repeat bg-[right_1rem_center] cursor-pointer ${
+          error ? 'border-red-400 bg-red-50/30 focus:ring-red-500/30 focus:border-red-500' : ''
         } ${className}`}
         style={{
           backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,

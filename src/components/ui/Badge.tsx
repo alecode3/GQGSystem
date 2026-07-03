@@ -19,7 +19,7 @@ export const Badge: React.FC<BadgeProps> = ({ status, className = '' }) => {
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full border ${colors} ${className}`}
+      className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full border-2 shadow-sm ${colors} ${className}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${isCobrado ? 'bg-emerald-500' : isPendiente ? 'bg-amber-500' : 'bg-slate-500'}`} />
       {status}

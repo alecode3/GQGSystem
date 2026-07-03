@@ -48,7 +48,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
   const scheme = colorSchemes[color];
 
   return (
-    <Card hoverable className="flex items-center justify-between border-l-4 border-l-brand-600 relative overflow-hidden">
+    <Card hoverable className="flex items-center justify-between border-l-[6px] border-l-brand-600 relative overflow-hidden shadow-xl shadow-slate-300/70">
       <div className="space-y-2">
         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">
           {title}
@@ -63,7 +63,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
         )}
       </div>
       
-      <div className={`p-3.5 rounded-2xl border ${scheme.bg} shadow-sm shadow-slate-100`}>
+      <div className={`p-3.5 rounded-2xl border-2 ${scheme.bg} shadow-md shadow-slate-200/80`}>
         <Icon className="w-6 h-6" />
       </div>
     </Card>

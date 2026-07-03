@@ -45,7 +45,7 @@ export const VentasTable: React.FC<VentasTableProps> = ({
 
   if (ventas.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
+      <div className="text-center py-12 gqg-panel shadow-lg">
         <ShieldAlert className="w-10 h-10 text-slate-400 mx-auto mb-3" />
         <h3 className="text-sm font-bold text-slate-700">Sin Ventas Registradas</h3>
         <p className="text-xs text-slate-500 mt-1">Registra tu primera venta para verla listada en esta sección.</p>

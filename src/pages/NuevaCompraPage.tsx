@@ -71,13 +71,13 @@ export const NuevaCompraPage: React.FC = () => {
             Registrar Nueva Compra
           </h2>
           <p className="text-sm text-slate-500 font-medium">
-            Factura electrónica de compra y división automatizada de cuotas de cuentas a pagar.
+            Registre la compra y seleccione la condición de pago: Contado o Crédito con plan de cuotas.
           </p>
         </div>
       </div>
 
       {/* Academic Alert Box */}
-      <div className="bg-brand-50 border border-brand-200 p-4 rounded-2xl flex gap-3 text-brand-850 animate-fade-in">
+      <div className="gqg-alert bg-brand-50 border-brand-300 p-4 shadow-brand-200/50 flex gap-3 text-brand-850 animate-fade-in">
         <BookOpen className="w-5 h-5 text-brand-700 flex-shrink-0 mt-0.5" />
         <div className="text-xs space-y-1">
           <span className="font-extrabold block">DETERMINACIÓN AUTOMÁTICA DE CUENTAS (TRIGGER ACTIVO)</span>

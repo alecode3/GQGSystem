@@ -101,10 +101,10 @@ export const PlazosPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-            ABM de Plazos
+            Configuración de Plazos
           </h2>
           <p className="text-sm text-slate-500 font-medium">
-            Gestión de plazos regulares e irregulares (Requerimiento DIN_U1_02).
+            Parametrización administrativa de planes de cuotas (regular e irregular). Los vendedores eligen el plan al registrar ventas o compras.
           </p>
         </div>
         {!isFormOpen && (
@@ -125,10 +125,10 @@ export const PlazosPage: React.FC = () => {
           isLoading={isSaving}
         />
       ) : (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-600">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-xs">
+              <thead className="bg-slate-50 border-b-2 border-slate-300 text-slate-500 font-bold uppercase tracking-wider text-xs">
                 <tr>
                   <th className="px-6 py-4">ID</th>
                   <th className="px-6 py-4">Descripción</th>

@@ -9,7 +9,7 @@ export const Header: React.FC = () => {
     import.meta.env.VITE_SUPABASE_ANON_KEY.length > 50;
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between fixed top-0 right-0 left-64 z-20 shadow-sm">
+    <header className="h-16 bg-white border-b-2 border-slate-300 px-8 flex items-center justify-between fixed top-0 right-0 left-64 z-20 shadow-lg shadow-slate-300/40">
       {/* Title / Breadcrumb context */}
       <div className="flex items-center gap-2">
         <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-lg">
@@ -24,13 +24,13 @@ export const Header: React.FC = () => {
       <div className="flex items-center gap-6">
         {/* Dynamic Database Badge */}
         {isSupabaseConfigured ? (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold shadow-sm shadow-emerald-50">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border-2 border-emerald-300 text-emerald-700 text-xs font-bold shadow-md shadow-emerald-200/60">
             <Wifi className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
             <Database className="w-3.5 h-3.5 text-emerald-600" />
             <span>Supabase Conectado</span>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shadow-sm shadow-blue-50">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 border-2 border-blue-300 text-blue-700 text-xs font-bold shadow-md shadow-blue-200/60">
             <WifiOff className="w-3.5 h-3.5 text-blue-600" />
             <Database className="w-3.5 h-3.5 text-blue-600" />
             <span>Modo Simulado (Local)</span>

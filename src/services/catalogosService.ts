@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { Cliente, Proveedor, Moneda, Deposito, TipoDocumento, Plazo } from '../types/catalogos';
+import { Cliente, Proveedor, Moneda, Deposito, TipoDocumento, Plazo, PlazoDetalle } from '../types/catalogos';
 
 // MOCK DATA DE RESPALDO (En caso de que falle la conexión a Supabase)
 export const MOCK_CLIENTES: Cliente[] = [
@@ -36,7 +36,16 @@ export const MOCK_PLAZOS: Plazo[] = [
   { id: 1, plazo: 'Contado - 0 días', tipo_id: 1, cuotas: 1, irregular: false, activo: true },
   { id: 2, plazo: 'Crédito - 30 días', tipo_id: 2, cuotas: 1, irregular: false, activo: true },
   { id: 3, plazo: 'Crédito Regular - 30/60/90 días', tipo_id: 2, cuotas: 3, irregular: false, activo: true },
-  { id: 4, plazo: 'Crédito Irregular - 45/75 días', tipo_id: 2, cuotas: 2, irregular: true, activo: true }
+  { id: 4, plazo: 'Crédito Irregular - 45/75 días', tipo_id: 2, cuotas: 2, irregular: true, activo: true },
+  { id: 5, plazo: 'Crédito Irregular - 30/45/60 días', tipo_id: 2, cuotas: 3, irregular: true, activo: true }
+];
+
+export const MOCK_PLAZO_DETALLES: PlazoDetalle[] = [
+  { id: 1, plazo_id: 4, cuota: 1, dias: 45 },
+  { id: 2, plazo_id: 4, cuota: 2, dias: 75 },
+  { id: 3, plazo_id: 5, cuota: 1, dias: 30 },
+  { id: 4, plazo_id: 5, cuota: 2, dias: 45 },
+  { id: 5, plazo_id: 5, cuota: 3, dias: 60 }
 ];
 
 export const catalogosService = {
@@ -127,6 +136,22 @@ export const catalogosService = {
     } catch (error) {
       console.warn('Falla al cargar plazos de Supabase. Usando mock data.', error);
       return MOCK_PLAZOS;
+    }
+  },
+
+  async getPlazoDetalles(plazoId: number): Promise<PlazoDetalle[]> {
+    try {
+      const { data, error } = await supabase
+        .from('plazo_detalles')
+        .select('*')
+        .eq('plazo_id', plazoId)
+        .order('cuota');
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.warn(`Falla al cargar detalles del plazo ${plazoId}. Usando mock data.`, error);
+      return MOCK_PLAZO_DETALLES.filter((d) => d.plazo_id === plazoId);
     }
   }
 };

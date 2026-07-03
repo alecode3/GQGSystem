@@ -9,8 +9,9 @@ import { NuevaVentaPayload } from '../../types/venta';
 import { CuentaCobrarDetalle } from '../../types/cuentaCobrar';
 import { cuentasCobrarService } from '../../services/cuentasCobrarService';
 import { formatCurrency, formatInvoice } from '../../utils/formatters';
-import { formatDate } from '../../utils/dates';
-import { Save, PlusCircle, CheckCircle, Calendar, CreditCard, DollarSign } from 'lucide-react';
+import { CondicionPagoSection } from '../shared/CondicionPagoSection';
+import { CuentaDetallePanel } from '../cuentas/CuentaDetallePanel';
+import { Save, PlusCircle, CheckCircle, Calendar, DollarSign } from 'lucide-react';
 
 interface VentaFormProps {
   clientes: Cliente[];
@@ -63,21 +64,21 @@ export const VentaForm: React.FC<VentaFormProps> = ({
     setTotalFactura(exento + base + impuesto);
   }, [totalExento, totalBase, totalImpuesto]);
 
-  // Filtrar plazos según el tipo de documento seleccionado
-  const plazosFiltrados = plazos.filter(p => p.tipo_id === Number(tipoDocId));
+  const handleCondicionChange = (nuevoTipoDocId: string, nuevoPlazoId: string) => {
+    setTipoDocId(nuevoTipoDocId);
+    setPlazoId(nuevoPlazoId);
+  };
 
-  // Limpiar el plazo seleccionado si cambia el tipo de documento
-  const handleTipoDocChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTipoDocId(e.target.value);
-    setPlazoId('');
+  const handlePlazoChange = (nuevoPlazoId: string) => {
+    setPlazoId(nuevoPlazoId);
   };
 
   const validateForm = (): string | null => {
     if (!clienteId) return 'Debe seleccionar un cliente.';
     if (!depositoId) return 'Debe seleccionar un depósito.';
     if (!monedaId) return 'Debe seleccionar una moneda.';
-    if (!tipoDocId) return 'Debe seleccionar un tipo de documento.';
-    if (!plazoId) return 'Debe seleccionar un plazo comercial.';
+    if (!tipoDocId) return 'Debe seleccionar la condición de pago (Contado o Crédito).';
+    if (!plazoId) return 'Debe seleccionar el plan de cuotas.';
     if (!fechaFactura) return 'La fecha de la factura es obligatoria.';
     if (!timbrado.trim()) return 'El número de timbrado es obligatorio.';
     if (!timbradoVence) return 'La fecha de vencimiento del timbrado es obligatoria.';
@@ -153,6 +154,8 @@ export const VentaForm: React.FC<VentaFormProps> = ({
   };
 
   const monedaAbrev = monedas.find(m => m.id === Number(monedaId))?.abreviatura || 'PYG';
+  const monedaDesc = monedas.find(m => m.id === Number(monedaId))?.descripcion || 'Guaraníes';
+  const clienteRuc = clientes.find(c => c.id === Number(clienteId))?.ruc || '';
 
   return (
     <div className="space-y-6">
@@ -164,7 +167,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
       )}
 
       {successVenta && (
-        <Card className="bg-emerald-50/30 border-emerald-200 animate-fade-in">
+        <Card className="bg-emerald-50/40 border-2 border-emerald-300 shadow-lg shadow-emerald-200/50 animate-fade-in">
           <div className="flex gap-4">
             <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
               <CheckCircle className="w-6 h-6 text-emerald-600" />
@@ -177,41 +180,24 @@ export const VentaForm: React.FC<VentaFormProps> = ({
                 La factura <span className="font-extrabold">{formatInvoice(successVenta.serie, successVenta.nro_factura)}</span> por un total de <span className="font-extrabold">{formatCurrency(successVenta.total_factura, monedaAbrev)}</span> ha sido procesada de manera correcta.
               </p>
               
-              {/* Sección 5: Resultado de Cuotas Generadas */}
               {cuotasGeneradas.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-emerald-200/60 space-y-3">
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest block">
-                    SECCIÓN 5: CUOTAS GENERADAS AUTOMÁTICAMENTE (TRIGGER POSTGRESQL)
-                  </span>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {cuotasGeneradas.map((cuota) => (
-                      <div
-                        key={cuota.cuenta_id}
-                        className="bg-white border border-emerald-200/80 rounded-xl p-3.5 shadow-sm relative"
-                      >
-                        <div className="absolute top-3 right-3 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-                          {cuota.cuota_texto}
-                        </div>
-                        <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                          CUOTA #{cuota.cuota}
-                        </span>
-                        <span className="text-lg font-black text-slate-800 block mt-1">
-                          {formatCurrency(cuota.importe, cuota.moneda_abreviatura)}
-                        </span>
-                        <div className="flex items-center gap-1 mt-2 text-xs font-medium text-slate-500">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Vence: <strong className="text-slate-700">{formatDate(cuota.vence)}</strong></span>
-                        </div>
-                        <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-400">ESTADO</span>
-                          <span className="font-extrabold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md">
-                            {cuota.estado}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="mt-4 pt-4 border-t border-emerald-200/60">
+                  <CuentaDetallePanel
+                    titulo="Cuentas a Cobrar"
+                    entidadLabel="Cliente"
+                    entidad={cuotasGeneradas[0].cliente || clienteRuc}
+                    factura={formatInvoice(successVenta.serie, successVenta.nro_factura)}
+                    fecha={successVenta.fecha_factura}
+                    moneda={cuotasGeneradas[0].moneda || monedaDesc}
+                    cuotasPlan={cuotasGeneradas[0].plazo}
+                    monedaAbrev={cuotasGeneradas[0].moneda_abreviatura || monedaAbrev}
+                    filas={cuotasGeneradas.map((c) => ({
+                      cuota_texto: c.cuota_texto,
+                      importe: c.importe,
+                      vence: c.vence,
+                      pagado: c.cobrado
+                    }))}
+                  />
                 </div>
               )}
 
@@ -235,7 +221,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* SECCIÓN 1: DATOS DE FACTURA */}
           <Card className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 border-b-2 border-slate-300 pb-3">
               <Calendar className="w-5 h-5 text-brand-600" />
               <h2 className="text-base font-bold text-slate-800">
                 Sección 1: Datos de Factura
@@ -288,7 +274,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
 
           {/* SECCIÓN 2: CLIENTE Y MONEDA */}
           <Card className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 border-b-2 border-slate-300 pb-3">
               <DollarSign className="w-5 h-5 text-brand-600" />
               <h2 className="text-base font-bold text-slate-800">
                 Sección 2: Cliente, Depósito y Moneda
@@ -321,42 +307,12 @@ export const VentaForm: React.FC<VentaFormProps> = ({
             </div>
           </Card>
 
-          {/* SECCIÓN 3: TIPO DE DOCUMENTO Y PLAZO */}
+          {/* SECCIÓN 3: TOTALES */}
           <Card className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <CreditCard className="w-5 h-5 text-brand-600" />
-              <h2 className="text-base font-bold text-slate-800">
-                Sección 3: Tipo de Documento y Plazo Comercial
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select
-                label="Tipo de Documento"
-                value={tipoDocId}
-                onChange={handleTipoDocChange}
-                placeholder="Seleccione tipo..."
-                required
-                options={tiposDoc.map(t => ({ value: t.id, label: t.descripcion }))}
-              />
-              <Select
-                label="Plazo Comercial Habilitado"
-                value={plazoId}
-                onChange={(e) => setPlazoId(e.target.value)}
-                placeholder={tipoDocId ? "Seleccione plazo compatible..." : "Primero elija tipo de documento"}
-                required
-                disabled={!tipoDocId}
-                options={plazosFiltrados.map(p => ({ value: p.id, label: p.plazo }))}
-              />
-            </div>
-          </Card>
-
-          {/* SECCIÓN 4: TOTALES */}
-          <Card className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 border-b-2 border-slate-300 pb-3">
               <DollarSign className="w-5 h-5 text-brand-600" />
               <h2 className="text-base font-bold text-slate-800">
-                Sección 4: Desglose de Totales
+                Sección 3: Desglose de Totales
               </h2>
             </div>
 
@@ -388,7 +344,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
             </div>
 
             {/* Visualización del Total Calculado en Grande */}
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+            <div className="p-5 bg-slate-50 border-2 border-slate-300 rounded-xl shadow-md shadow-slate-200/70 flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">
                   TOTAL A FACTURAR (AUTOCALCULADO)
@@ -404,19 +360,34 @@ export const VentaForm: React.FC<VentaFormProps> = ({
               </div>
             </div>
 
-            <div className="pt-2 flex justify-end">
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                isLoading={isLoading}
-                className="w-full md:w-auto flex items-center justify-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                <span>Registrar Venta en Sistema</span>
-              </Button>
-            </div>
           </Card>
+
+          {/* SECCIÓN 4: CONDICIÓN DE PAGO Y PREVISUALIZACIÓN */}
+          <CondicionPagoSection
+            tiposDoc={tiposDoc}
+            plazos={plazos}
+            tipoDocId={tipoDocId}
+            plazoId={plazoId}
+            onTipoDocChange={handleCondicionChange}
+            onPlazoChange={handlePlazoChange}
+            fechaFactura={fechaFactura}
+            totalFactura={totalFactura}
+            monedaAbrev={monedaAbrev}
+          />
+
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              isLoading={isLoading}
+              disabled={!tipoDocId || !plazoId}
+              className="w-full md:w-auto flex items-center justify-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              <span>Registrar Venta en Sistema</span>
+            </Button>
+          </div>
         </form>
       )}
     </div>

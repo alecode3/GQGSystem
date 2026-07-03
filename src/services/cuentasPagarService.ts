@@ -1,8 +1,14 @@
 import { supabase } from './supabaseClient';
 import { CuentaPagarDetalle } from '../types/cuentaPagar';
 import { Compra } from '../types/compra';
-import { MOCK_PROVEEDORES, MOCK_MONEDAS, MOCK_PLAZOS } from './catalogosService';
-import { addDays } from '../utils/dates';
+import {
+  MOCK_PROVEEDORES,
+  MOCK_MONEDAS,
+  MOCK_PLAZOS,
+  MOCK_PLAZO_DETALLES,
+  MOCK_TIPOS_DOCUMENTO
+} from './catalogosService';
+import { calcularCuotasPreview } from '../utils/cuotasPreview';
 import { formatInvoice } from '../utils/formatters';
 
 const LOCAL_STORAGE_CUENTAS_PAGAR = 'gqg_cuentas_pagar_db';
@@ -19,187 +25,53 @@ const saveLocalCuentasPagar = (cuentas: CuentaPagarDetalle[]) => {
 };
 
 /**
- * SIMULACIÓN DEL TRIGGER DE POSTGRESQL EN EL FRONTEND PARA COMPRAS
- * Genera automáticamente registros de cuotas en cuentas_pagar basándose en el plazo y tipo de documento.
- * Guarda los resultados formateados en la estructura de la vista v_cuentas_pagar_detalle.
+ * Simulación offline del trigger PostgreSQL para compras.
+ * Usa la misma lógica que calcularCuotasPreview para mantener consistencia.
  */
 export const simulateCuentasPagarTrigger = (compra: Compra) => {
-  const proveedor = MOCK_PROVEEDORES.find(p => p.id === compra.proveedor_id)?.ruc || `Proveedor #${compra.proveedor_id}`;
-  const monedaObj = MOCK_MONEDAS.find(m => m.id === compra.moneda_id);
+  const proveedor = MOCK_PROVEEDORES.find((p) => p.id === compra.proveedor_id)?.ruc || `Proveedor #${compra.proveedor_id}`;
+  const monedaObj = MOCK_MONEDAS.find((m) => m.id === compra.moneda_id);
   const monedaDesc = monedaObj?.descripcion || 'Guaraníes';
   const monedaAbrev = monedaObj?.abreviatura || 'PYG';
-  const plazoObj = MOCK_PLAZOS.find(p => p.id === compra.plazo_id);
+  const plazoObj = MOCK_PLAZOS.find((p) => p.id === compra.plazo_id);
   const plazoDesc = plazoObj?.plazo || `Plazo #${compra.plazo_id}`;
-  
-  const cuotasGeneradas: CuentaPagarDetalle[] = [];
-  const existingCuentas = getLocalCuentasPagar().filter(c => c.compra_id !== compra.id); // Evitar duplicados
-  
-  let totalImportes = 0;
-  
-  // Reglas del trigger según el tipo de plazo
-  if (compra.plazo_id === 1) {
-    // Contado: 1 cuota que vence el mismo día
-    const cuota: CuentaPagarDetalle = {
-      cuenta_id: Number(`300${compra.id}1`),
-      compra_id: compra.id,
-      fecha_proceso: compra.fecha_proceso,
-      fecha_factura: compra.fecha_factura,
-      factura: formatInvoice(compra.serie, compra.nro_factura),
-      timbrado: compra.timbrado,
-      total_factura: compra.total_factura,
-      proveedor_id: compra.proveedor_id,
-      proveedor: proveedor,
-      moneda: monedaDesc,
-      moneda_abreviatura: monedaAbrev,
-      plazo: plazoDesc,
-      cuotas: 1,
-      cuota: 1,
-      cuota_texto: '1/1',
-      importe: compra.total_factura,
-      vence: compra.fecha_factura,
-      pagado: 0,
-      saldo: compra.total_factura,
-      estado: 'PENDIENTE'
-    };
-    cuotasGeneradas.push(cuota);
-  } 
-  else if (compra.plazo_id === 2) {
-    // Crédito 30 días: 1 cuota a 30 días
-    const cuota: CuentaPagarDetalle = {
-      cuenta_id: Number(`300${compra.id}1`),
-      compra_id: compra.id,
-      fecha_proceso: compra.fecha_proceso,
-      fecha_factura: compra.fecha_factura,
-      factura: formatInvoice(compra.serie, compra.nro_factura),
-      timbrado: compra.timbrado,
-      total_factura: compra.total_factura,
-      proveedor_id: compra.proveedor_id,
-      proveedor: proveedor,
-      moneda: monedaDesc,
-      moneda_abreviatura: monedaAbrev,
-      plazo: plazoDesc,
-      cuotas: 1,
-      cuota: 1,
-      cuota_texto: '1/1',
-      importe: compra.total_factura,
-      vence: addDays(compra.fecha_factura, 30),
-      pagado: 0,
-      saldo: compra.total_factura,
-      estado: 'PENDIENTE'
-    };
-    cuotasGeneradas.push(cuota);
-  }
-  else if (compra.plazo_id === 3) {
-    // Crédito Regular: 3 cuotas a 30/60/90 días
-    const numCuotas = 3;
-    const importePorCuota = Math.round(compra.total_factura / numCuotas);
-    
-    for (let c = 1; c <= numCuotas; c++) {
-      const importeFinal = c === numCuotas ? (compra.total_factura - totalImportes) : importePorCuota;
-      totalImportes += importeFinal;
-      
-      const cuota: CuentaPagarDetalle = {
-        cuenta_id: Number(`300${compra.id}${c}`),
-        compra_id: compra.id,
-        fecha_proceso: compra.fecha_proceso,
-        fecha_factura: compra.fecha_factura,
-        factura: formatInvoice(compra.serie, compra.nro_factura),
-        timbrado: compra.timbrado,
-        total_factura: compra.total_factura,
-        proveedor_id: compra.proveedor_id,
-        proveedor: proveedor,
-        moneda: monedaDesc,
-        moneda_abreviatura: monedaAbrev,
-        plazo: plazoDesc,
-        cuotas: numCuotas,
-        cuota: c,
-        cuota_texto: `${c}/${numCuotas}`,
-        importe: importeFinal,
-        vence: addDays(compra.fecha_factura, c * 30),
-        pagado: 0,
-        saldo: importeFinal,
-        estado: 'PENDIENTE'
-      };
-      cuotasGeneradas.push(cuota);
-    }
-  }
-  else if (compra.plazo_id === 4) {
-    // Crédito Irregular: 2 cuotas a 45 y 75 días
-    const numCuotas = 2;
-    const porcentajes = [0.45, 0.55];
-    const vencimientos = [45, 75];
-    
-    for (let c = 1; c <= numCuotas; c++) {
-      const importeFinal = c === numCuotas 
-        ? (compra.total_factura - totalImportes) 
-        : Math.round(compra.total_factura * porcentajes[c - 1]);
-      totalImportes += importeFinal;
-      
-      const cuota: CuentaPagarDetalle = {
-        cuenta_id: Number(`300${compra.id}${c}`),
-        compra_id: compra.id,
-        fecha_proceso: compra.fecha_proceso,
-        fecha_factura: compra.fecha_factura,
-        factura: formatInvoice(compra.serie, compra.nro_factura),
-        timbrado: compra.timbrado,
-        total_factura: compra.total_factura,
-        proveedor_id: compra.proveedor_id,
-        proveedor: proveedor,
-        moneda: monedaDesc,
-        moneda_abreviatura: monedaAbrev,
-        plazo: plazoDesc,
-        cuotas: numCuotas,
-        cuota: c,
-        cuota_texto: `${c}/${numCuotas}`,
-        importe: importeFinal,
-        vence: addDays(compra.fecha_factura, vencimientos[c - 1]),
-        pagado: 0,
-        saldo: importeFinal,
-        estado: 'PENDIENTE'
-      };
-      cuotasGeneradas.push(cuota);
-    }
-  } else {
-    // Fallback genérico para plazos creados en el ABM
-    // Si podemos deducir que es irregular, buscaremos crear cuotas con espaciado mensual, o intentar emular
-    const numCuotas = plazoObj?.cuotas || 1;
-    const importePorCuota = Math.round(compra.total_factura / numCuotas);
-    const irregular = plazoObj?.irregular || false;
-    
-    for (let c = 1; c <= numCuotas; c++) {
-      const importeFinal = c === numCuotas ? (compra.total_factura - totalImportes) : importePorCuota;
-      totalImportes += importeFinal;
-      
-      // Intentar adivinar días: si es irregular y no es plazo 4, hacemos intervalos de 15, 30, 45, etc. o mensual
-      const diasCalculados = irregular ? c * 20 : c * 30;
-      
-      const cuota: CuentaPagarDetalle = {
-        cuenta_id: Number(`300${compra.id}${c}`),
-        compra_id: compra.id,
-        fecha_proceso: compra.fecha_proceso,
-        fecha_factura: compra.fecha_factura,
-        factura: formatInvoice(compra.serie, compra.nro_factura),
-        timbrado: compra.timbrado,
-        total_factura: compra.total_factura,
-        proveedor_id: compra.proveedor_id,
-        proveedor: proveedor,
-        moneda: monedaDesc,
-        moneda_abreviatura: monedaAbrev,
-        plazo: plazoDesc,
-        cuotas: numCuotas,
-        cuota: c,
-        cuota_texto: `${c}/${numCuotas}`,
-        importe: importeFinal,
-        vence: addDays(compra.fecha_factura, diasCalculados),
-        pagado: 0,
-        saldo: importeFinal,
-        estado: 'PENDIENTE'
-      };
-      cuotasGeneradas.push(cuota);
-    }
-  }
-  
-  // Guardar en la base de datos local simulada
+  const tipoDoc = MOCK_TIPOS_DOCUMENTO.find((t) => t.id === compra.tipo_doc_id);
+  const detalles = MOCK_PLAZO_DETALLES.filter((d) => d.plazo_id === compra.plazo_id);
+
+  const preview = calcularCuotasPreview(
+    compra.fecha_factura,
+    compra.total_factura,
+    tipoDoc,
+    plazoObj,
+    detalles
+  );
+
+  const existingCuentas = getLocalCuentasPagar().filter((c) => c.compra_id !== compra.id);
+  const numCuotas = plazoObj?.cuotas || 1;
+
+  const cuotasGeneradas: CuentaPagarDetalle[] = preview.map((row) => ({
+    cuenta_id: Number(`300${compra.id}${row.cuota}`),
+    compra_id: compra.id,
+    fecha_proceso: compra.fecha_proceso,
+    fecha_factura: compra.fecha_factura,
+    factura: formatInvoice(compra.serie, compra.nro_factura),
+    timbrado: compra.timbrado,
+    total_factura: compra.total_factura,
+    proveedor_id: compra.proveedor_id,
+    proveedor,
+    moneda: monedaDesc,
+    moneda_abreviatura: monedaAbrev,
+    plazo: plazoDesc,
+    cuotas: numCuotas,
+    cuota: row.cuota,
+    cuota_texto: row.cuota_texto,
+    importe: row.importe,
+    vence: row.vence,
+    pagado: row.cobrado,
+    saldo: row.importe,
+    estado: 'PENDIENTE'
+  }));
+
   saveLocalCuentasPagar([...existingCuentas, ...cuotasGeneradas]);
 };
 

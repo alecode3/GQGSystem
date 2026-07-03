@@ -9,6 +9,8 @@ import { NuevaCompraPayload } from '../../types/compra';
 import { CuentaPagarDetalle } from '../../types/cuentaPagar';
 import { cuentasPagarService } from '../../services/cuentasPagarService';
 import { formatCurrency, formatInvoice } from '../../utils/formatters';
+import { CondicionPagoSection } from '../shared/CondicionPagoSection';
+import { CuentaDetallePanel } from '../cuentas/CuentaDetallePanel';
 import { Save, PlusCircle, CheckCircle, Calendar, CreditCard, DollarSign } from 'lucide-react';
 
 interface CompraFormProps {
@@ -62,21 +64,21 @@ export const CompraForm: React.FC<CompraFormProps> = ({
     setTotalFactura(exento + base + impuesto);
   }, [totalExento, totalBase, totalImpuesto]);
 
-  // Filtrar plazos según el tipo de documento seleccionado
-  const plazosFiltrados = plazos.filter(p => p.tipo_id === Number(tipoDocId));
+  const handleCondicionChange = (nuevoTipoDocId: string, nuevoPlazoId: string) => {
+    setTipoDocId(nuevoTipoDocId);
+    setPlazoId(nuevoPlazoId);
+  };
 
-  // Limpiar el plazo seleccionado si cambia el tipo de documento
-  const handleTipoDocChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setTipoDocId(e.target.value);
-    setPlazoId('');
+  const handlePlazoChange = (nuevoPlazoId: string) => {
+    setPlazoId(nuevoPlazoId);
   };
 
   const validateForm = (): string | null => {
     if (!proveedorId) return 'Debe seleccionar un proveedor.';
     if (!depositoId) return 'Debe seleccionar un depósito.';
     if (!monedaId) return 'Debe seleccionar una moneda.';
-    if (!tipoDocId) return 'Debe seleccionar un tipo de documento.';
-    if (!plazoId) return 'Debe seleccionar un plazo comercial.';
+    if (!tipoDocId) return 'Debe seleccionar la condición de pago (Contado o Crédito).';
+    if (!plazoId) return 'Debe seleccionar el plan de cuotas.';
     if (!fechaFactura) return 'La fecha de la factura es obligatoria.';
     if (!timbrado.trim()) return 'El número de timbrado es obligatorio.';
     if (!timbradoVence) return 'La fecha de vencimiento del timbrado es obligatoria.';
@@ -152,6 +154,8 @@ export const CompraForm: React.FC<CompraFormProps> = ({
   };
 
   const monedaAbrev = monedas.find(m => m.id === Number(monedaId))?.abreviatura || 'PYG';
+  const monedaDesc = monedas.find(m => m.id === Number(monedaId))?.descripcion || 'Guaraníes';
+  const proveedorRuc = proveedores.find(p => p.id === Number(proveedorId))?.ruc || '';
 
   return (
     <div className="space-y-6">
@@ -163,7 +167,7 @@ export const CompraForm: React.FC<CompraFormProps> = ({
       )}
 
       {successCompra && (
-        <Card className="bg-emerald-50/30 border-emerald-200 animate-fade-in">
+        <Card className="bg-emerald-50/40 border-2 border-emerald-300 shadow-lg shadow-emerald-200/50 animate-fade-in">
           <div className="flex gap-4">
             <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
               <CheckCircle className="w-6 h-6 text-emerald-600" />
@@ -176,35 +180,25 @@ export const CompraForm: React.FC<CompraFormProps> = ({
                 La factura de compra <span className="font-extrabold">{formatInvoice(successCompra.serie, successCompra.nro_factura)}</span> por un total de <span className="font-extrabold">{formatCurrency(successCompra.total_factura, monedaAbrev)}</span> ha sido procesada de manera correcta.
               </p>
               
-              {/* Sección 5: Resultado de Cuotas Generadas */}
               {cuotasGeneradas.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-emerald-200/60 space-y-3">
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest block">
-                    SECCIÓN 5: CUOTAS GENERADAS AUTOMÁTICAMENTE (TRIGGER POSTGRESQL)
-                  </span>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {cuotasGeneradas.map((cuota) => (
-                      <div
-                        key={cuota.cuenta_id}
-                        className="bg-white border border-emerald-200/80 rounded-xl p-3.5 shadow-sm relative"
-                      >
-                        <div className="absolute top-3 right-3 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-                          {cuota.cuota_texto}
-                        </div>
-                        <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                          CUOTA #{cuota.cuota}
-                        </span>
-                        <span className="text-lg font-black text-slate-800 block mt-1">
-                          {formatCurrency(cuota.importe, cuota.moneda_abreviatura)}
-                        </span>
-                        <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-2 font-medium">
-                          <Calendar className="w-3.5 h-3.5 text-brand-600" />
-                          <span>Vence el {new Date(cuota.vence).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="mt-4 pt-4 border-t border-emerald-200/60">
+                  <CuentaDetallePanel
+                    titulo="Cuentas a Pagar"
+                    entidadLabel="Proveedor"
+                    entidad={cuotasGeneradas[0].proveedor || proveedorRuc}
+                    factura={formatInvoice(successCompra.serie, successCompra.nro_factura)}
+                    fecha={successCompra.fecha_factura}
+                    moneda={cuotasGeneradas[0].moneda || monedaDesc}
+                    cuotasPlan={cuotasGeneradas[0].plazo}
+                    monedaAbrev={cuotasGeneradas[0].moneda_abreviatura || monedaAbrev}
+                    pagadoLabel="Pagado"
+                    filas={cuotasGeneradas.map((c) => ({
+                      cuota_texto: c.cuota_texto,
+                      importe: c.importe,
+                      vence: c.vence,
+                      pagado: c.pagado
+                    }))}
+                  />
                 </div>
               )}
 
@@ -227,7 +221,7 @@ export const CompraForm: React.FC<CompraFormProps> = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* SECCIÓN 1: DATOS GENERALES DE LA COMPRA */}
           <Card className="p-6 space-y-6">
-            <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+            <h3 className="text-base font-bold text-slate-800 border-b-2 border-slate-300 pb-2.5 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-brand-600" />
               <span>Sección 1: Cabecera y Proveedor</span>
             </h3>
@@ -272,7 +266,7 @@ export const CompraForm: React.FC<CompraFormProps> = ({
 
           {/* SECCIÓN 2: DATOS DEL COMPROBANTE */}
           <Card className="p-6 space-y-6">
-            <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+            <h3 className="text-base font-bold text-slate-800 border-b-2 border-slate-300 pb-2.5 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-brand-600" />
               <span>Sección 2: Factura y Timbrado de Compra</span>
             </h3>
@@ -313,47 +307,11 @@ export const CompraForm: React.FC<CompraFormProps> = ({
             </div>
           </Card>
 
-          {/* SECCIÓN 3: CONDICIÓN Y PLAZO */}
+          {/* SECCIÓN 3: IMPORTES */}
           <Card className="p-6 space-y-6">
-            <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-brand-600" />
-              <span>Sección 3: Modalidad y Plazo de Financiación</span>
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select
-                label="Tipo de Documento (Condición)"
-                value={tipoDocId}
-                onChange={handleTipoDocChange}
-                required
-                options={[
-                  { value: '', label: 'Seleccione modalidad...' },
-                  ...tiposDoc.map(t => ({ value: t.id, label: t.descripcion }))
-                ]}
-              />
-
-              <Select
-                label="Plazo Comercial"
-                value={plazoId}
-                onChange={(e) => setPlazoId(e.target.value)}
-                required
-                disabled={!tipoDocId}
-                options={[
-                  { value: '', label: tipoDocId ? 'Seleccione plazo comercial...' : 'Primero elija Tipo de Documento' },
-                  ...plazosFiltrados.map(p => ({
-                    value: p.id,
-                    label: `${p.plazo} (${p.cuotas} cuota/s - ${p.irregular ? 'Irregular' : 'Regular'})`
-                  }))
-                ]}
-              />
-            </div>
-          </Card>
-
-          {/* SECCIÓN 4: IMPORTES DE LA COMPRA */}
-          <Card className="p-6 space-y-6">
-            <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+            <h3 className="text-base font-bold text-slate-800 border-b-2 border-slate-300 pb-2.5 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-brand-600" />
-              <span>Sección 4: Importes Desglosados</span>
+              <span>Sección 3: Importes Desglosados</span>
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -382,7 +340,7 @@ export const CompraForm: React.FC<CompraFormProps> = ({
               />
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex items-center justify-between mt-4">
+            <div className="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-md shadow-slate-200/70 flex items-center justify-between mt-4">
               <div>
                 <span className="text-xs text-slate-500 uppercase tracking-widest font-bold">Total Factura Consolidado</span>
                 <p className="text-xs text-slate-400 mt-0.5">Suma automática de exento, base grabada e impuestos</p>
@@ -393,12 +351,26 @@ export const CompraForm: React.FC<CompraFormProps> = ({
             </div>
           </Card>
 
+          {/* SECCIÓN 4: CONDICIÓN DE PAGO Y PREVISUALIZACIÓN */}
+          <CondicionPagoSection
+            tiposDoc={tiposDoc}
+            plazos={plazos}
+            tipoDocId={tipoDocId}
+            plazoId={plazoId}
+            onTipoDocChange={handleCondicionChange}
+            onPlazoChange={handlePlazoChange}
+            fechaFactura={fechaFactura}
+            totalFactura={totalFactura}
+            monedaAbrev={monedaAbrev}
+          />
+
           {/* BOTÓN REGISTRAR */}
           <div className="flex justify-end gap-3">
             <Button
               type="submit"
               variant="primary"
               isLoading={isLoading}
+              disabled={!tipoDocId || !plazoId}
               className="flex items-center gap-2 shadow-brand-500/10 shadow-lg px-6"
             >
               <Save className="w-4 h-4" />

@@ -13,7 +13,7 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
   onRetry
 }) => {
   return (
-    <div className="p-5 border border-red-200 bg-red-50/50 rounded-2xl animate-fade-in flex gap-4">
+    <div className="gqg-alert p-5 border-red-300 bg-red-50/60 shadow-red-200/50 animate-fade-in flex gap-4">
       <div className="flex-shrink-0 text-red-500 mt-0.5">
         <AlertCircle className="w-5 h-5" />
       </div>

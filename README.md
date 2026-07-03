@@ -68,15 +68,30 @@ npm install
 ```
 
 ### 3. Configurar variables de entorno `.env`
-Renombra el archivo `.env.example` de la raíz a `.env` y edita los valores con las credenciales anónimas de tu proyecto Supabase:
+Copiá el archivo de ejemplo y completá tus credenciales de Supabase:
+
+```bash
+cp .env.example .env
+```
+
+Editá `.env` con los valores de **Supabase → Project Settings → API**:
 
 ```env
 VITE_SUPABASE_URL=https://tu-proyecto-id.supabase.co
 VITE_SUPABASE_ANON_KEY=tu-anon-key-de-supabase
 ```
-> ⚠️ **IMPORTANTE:** Nunca utilices ni expongas la clave `service_role` en el frontend del cliente. Solo utiliza la clave pública `anon`.
 
-### 4. Ejecutar el Servidor de Desarrollo
+> ⚠️ **IMPORTANTE:** Nunca utilices ni expongas la clave `service_role` en el frontend. Solo la clave pública `anon`.
+
+### 4. Configurar la base de datos en Supabase
+
+Ejecutá en el **SQL Editor** de Supabase, en este orden:
+
+1. `database_setup.sql` — tablas, vistas y triggers
+2. `database_rls_policies.sql` — permisos para que la app React pueda leer/escribir
+3. `database_seed_demo.sql` — datos de prueba (ventas, compras y cuotas)
+
+### 5. Ejecutar el Servidor de Desarrollo
 Inicia el entorno de desarrollo local con Vite:
 ```bash
 npm run dev
@@ -93,29 +108,29 @@ Para validar el correcto funcionamiento tanto de la lógica de negocio como de l
 - **Acción:** Dirígete a **Registrar Venta**.
 - **Flujo:**
   1. Elige cualquier cliente y depósito.
-  2. Selecciona **Tipo de Documento: Contado**.
-  3. Notarás que el combo **Plazo Comercial** automáticamente se filtra y **solo** muestra plazos de contado (`Contado - 0 días`).
-  4. Completa los datos de la factura (Serie, Nro de Factura, Timbrado) e ingresa un total base imponible (ej. `Gs. 1.000.000`).
+  2. Completa los datos de la factura e ingresa un total (ej. `Gs. 1.000.000`).
+  3. En **Condición de Pago**, selecciona **Contado (CO)**.
+  4. Verifica la previsualización: 1 cuota con vencimiento en la fecha de la factura.
   5. Haz clic en **Registrar Venta**.
-- **Resultado Esperado:** La venta se registra y la **Sección 5 (Resultado)** despliega exactamente **1 cuota** con vencimiento igual a la fecha de la factura por el 100% del importe.
+- **Resultado Esperado:** Panel de detalle con **1 cuota** al 100% del importe.
 
 ### Caso 2: Venta a Crédito Regular
 - **Acción:** Dirígete a **Registrar Venta**.
 - **Flujo:**
-  1. Selecciona **Tipo de Documento: Crédito**.
-  2. El combo de plazos filtrará dinámicamente mostrando plazos a crédito. Elige **Crédito Regular - 30/60/90 días**.
+  1. Selecciona **Crédito (CR)** en Condición de Pago.
+  2. Elige **Crédito Regular - 30/60/90 días**.
   3. Ingresa un total de factura (ej. `Gs. 3.000.000`).
-  4. Completa los datos y presiona **Registrar Venta**.
-- **Resultado Esperado:** En la Sección 5 se visualizarán de manera estructurada **3 cuotas** sucesivas con vencimientos a 30, 60 y 90 días, divididas equitativamente en montos de `Gs. 1.000.000` cada una.
+  4. Revisa la previsualización y presiona **Registrar Venta**.
+- **Resultado Esperado:** **3 cuotas** de `Gs. 1.000.000` con vencimientos a 30, 60 y 90 días.
 
-### Caso 3: Venta a Crédito Irregular
+### Caso 3: Venta a Crédito Irregular (mockup del cliente)
 - **Acción:** Dirígete a **Registrar Venta**.
 - **Flujo:**
-  1. Selecciona **Tipo de Documento: Crédito**.
-  2. Selecciona el plazo **Crédito Irregular - 45/75 días**.
-  3. Completa los datos e ingresa un importe total (ej. `Gs. 100` o `Gs. 1.000.000`).
-  4. Presiona **Registrar Venta**.
-- **Resultado Esperado:** El sistema desplegará **2 cuotas** con porcentajes desglosados (la primera por el 45% a 45 días de vencimiento, y la segunda por el 55% restante a 75 días de vencimiento).
+  1. Selecciona **Crédito (CR)**.
+  2. Elige **Crédito Irregular - 30/45/60 días**.
+  3. Ingresa total `Gs. 584.226` y fecha `18/06/2024`.
+  4. Revisa la previsualización y presiona **Registrar Venta**.
+- **Resultado Esperado:** **3 cuotas** de `Gs. 194.742` con vencimientos +30, +45 y +60 días.
 
 ### Caso 4: Control de Rechazos y Errores (Regla de Negocio)
 El sistema valida estrictamente la coincidencia de plazos.

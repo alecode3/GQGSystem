@@ -49,7 +49,7 @@ export const CuentasPagarTable: React.FC<CuentasPagarTableProps> = ({
 
   if (cuentas.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
+      <div className="text-center py-12 gqg-panel shadow-lg">
         <ShieldAlert className="w-10 h-10 text-slate-400 mx-auto mb-3" />
         <h3 className="text-sm font-bold text-slate-700">Sin Cuentas a Pagar</h3>
         <p className="text-xs text-slate-500 mt-1">No hay saldos pendientes ni registros que coincidan con los filtros seleccionados.</p>

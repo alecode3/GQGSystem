@@ -165,7 +165,7 @@ SELECT
     v.timbrado,
     v.total_factura,
     v.cliente_id,
-    v.cliente_id::text AS cliente,
+    cl.ruc AS cliente,
     m.descripcion AS moneda,
     m.abreviatura AS moneda_abreviatura,
     p.plazo,
@@ -194,7 +194,7 @@ SELECT
     c.timbrado,
     c.total_factura,
     c.proveedor_id,
-    c.proveedor_id::text AS proveedor,
+    pr.ruc AS proveedor,
     m.descripcion AS moneda,
     m.abreviatura AS moneda_abreviatura,
     p.plazo,
@@ -429,7 +429,8 @@ INSERT INTO plazos (id, plazo, tipo_id, cuotas, irregular, activo) VALUES
 (1, 'Contado - 0 días', 1, 1, false, true),
 (2, 'Crédito - 30 días', 2, 1, false, true),
 (3, 'Crédito Regular - 30/60/90 días', 2, 3, false, true),
-(4, 'Crédito Irregular - 45/75 días', 2, 2, true, true)
+(4, 'Crédito Irregular - 45/75 días', 2, 2, true, true),
+(5, 'Crédito Irregular - 30/45/60 días', 2, 3, true, true)
 ON CONFLICT (id) DO UPDATE SET 
     plazo = EXCLUDED.plazo,
     tipo_id = EXCLUDED.tipo_id,
@@ -439,7 +440,10 @@ ON CONFLICT (id) DO UPDATE SET
 -- Insertar Plazo Detalles (para plazos irregulares)
 INSERT INTO plazo_detalles (id, plazo_id, cuota, dias) VALUES
 (1, 4, 1, 45),
-(2, 4, 2, 75)
+(2, 4, 2, 75),
+(3, 5, 1, 30),
+(4, 5, 2, 45),
+(5, 5, 3, 60)
 ON CONFLICT (id) DO UPDATE SET 
     plazo_id = EXCLUDED.plazo_id,
     cuota = EXCLUDED.cuota,

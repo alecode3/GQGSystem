@@ -163,7 +163,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* BALANCE Y RENDIMIENTO */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 border border-slate-800">
+      <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-2xl shadow-slate-900/40 flex flex-col md:flex-row md:items-center justify-between gap-6 border-2 border-slate-700">
         <div className="space-y-1.5">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Resultado Operativo Neto (Margen Facturado)</span>
           <h3 className={`text-3xl font-black ${balanceEstimado >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -172,11 +172,11 @@ export const DashboardPage: React.FC = () => {
           <p className="text-xs text-slate-400">Diferencia entre facturación total de ventas y compras.</p>
         </div>
         <div className="flex gap-4">
-          <div className="bg-slate-800/80 px-5 py-3 rounded-xl border border-slate-700/50">
+          <div className="bg-slate-800/80 px-5 py-3 rounded-xl border-2 border-slate-600 shadow-lg shadow-black/30">
             <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Flujo Cobrado</span>
             <span className="text-base font-bold text-emerald-400">{formatCurrency(totalCobradoSum, 'PYG')}</span>
           </div>
-          <div className="bg-slate-800/80 px-5 py-3 rounded-xl border border-slate-700/50">
+          <div className="bg-slate-800/80 px-5 py-3 rounded-xl border-2 border-slate-600 shadow-lg shadow-black/30">
             <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Flujo Pagado</span>
             <span className="text-base font-bold text-rose-400">{formatCurrency(totalPagadoSum, 'PYG')}</span>
           </div>
@@ -187,7 +187,7 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {/* Cuentas a Cobrar */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div className="flex items-center justify-between border-b-2 border-slate-300 pb-3">
             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <Coins className="w-5 h-5 text-amber-500" />
               <span>Próximos Cobros (Cuentas a Cobrar)</span>
@@ -211,7 +211,7 @@ export const DashboardPage: React.FC = () => {
 
         {/* Cuentas a Pagar */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div className="flex items-center justify-between border-b-2 border-slate-300 pb-3">
             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-red-500" />
               <span>Próximos Pagos (Cuentas a Pagar)</span>
