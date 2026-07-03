@@ -7,7 +7,7 @@ import { catalogosService } from '../services/catalogosService';
 import { comprasService } from '../services/comprasService';
 import { Proveedor, Moneda, Deposito, TipoDocumento, Plazo } from '../types/catalogos';
 import { NuevaCompraPayload } from '../types/compra';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export const NuevaCompraPage: React.FC = () => {
   const navigate = useNavigate();
@@ -76,16 +76,6 @@ export const NuevaCompraPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Academic Alert Box */}
-      <div className="gqg-alert bg-brand-50 border-brand-300 p-4 shadow-brand-200/50 flex gap-3 text-brand-850 animate-fade-in">
-        <BookOpen className="w-5 h-5 text-brand-700 flex-shrink-0 mt-0.5" />
-        <div className="text-xs space-y-1">
-          <span className="font-extrabold block">DETERMINACIÓN AUTOMÁTICA DE CUENTAS (TRIGGER ACTIVO)</span>
-          <p className="leading-relaxed">
-            De acuerdo con el modelo académico de Ingeniería de Software III, al guardar este formulario el frontend inserta **únicamente** en la tabla <code className="bg-brand-100/50 px-1 py-0.5 rounded font-mono font-bold text-brand-900">compras</code>. El trigger de la base de datos PostgreSQL en Supabase procesa de manera inmediata la transacción y genera las cuotas en <code className="bg-brand-100/50 px-1 py-0.5 rounded font-mono font-bold text-brand-900">cuentas_pagar</code> de forma automática, sin intervención manual de cálculos en React.
-          </p>
-        </div>
-      </div>
 
       {/* Formulario */}
       <CompraForm

@@ -88,7 +88,7 @@ export const CuentasPagarPage: React.FC = () => {
             Control de Cuentas a Pagar
           </h2>
           <p className="text-sm text-slate-500 font-medium">
-            Consulta de la vista detallada <code className="bg-slate-100 px-1 py-0.5 rounded font-mono font-bold text-slate-700">v_cuentas_pagar_detalle</code>.
+            Gestione y supervise las cuentas a pagar de proveedores.
           </p>
         </div>
         <div className="flex gap-2">

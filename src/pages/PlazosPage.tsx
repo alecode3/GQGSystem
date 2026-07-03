@@ -104,7 +104,7 @@ export const PlazosPage: React.FC = () => {
             Configuración de Plazos
           </h2>
           <p className="text-sm text-slate-500 font-medium">
-            Parametrización administrativa de planes de cuotas (regular e irregular). Los vendedores eligen el plan al registrar ventas o compras.
+            Defina las condiciones y plazos de pago para las operaciones del sistema.
           </p>
         </div>
         {!isFormOpen && (
