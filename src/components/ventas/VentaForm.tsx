@@ -11,7 +11,9 @@ import { cuentasCobrarService } from '../../services/cuentasCobrarService';
 import { formatCurrency, formatInvoice } from '../../utils/formatters';
 import { CondicionPagoSection } from '../shared/CondicionPagoSection';
 import { CuentaDetallePanel } from '../cuentas/CuentaDetallePanel';
-import { Save, PlusCircle, CheckCircle, Calendar, DollarSign } from 'lucide-react';
+import { Save, PlusCircle, CheckCircle, Calendar, DollarSign, Printer } from 'lucide-react';
+import { printInvoice } from '../../utils/invoicePrinter';
+
 
 interface VentaFormProps {
   clientes: Cliente[];
@@ -201,7 +203,35 @@ export const VentaForm: React.FC<VentaFormProps> = ({
                 </div>
               )}
 
-              <div className="pt-2 flex gap-3">
+              <div className="pt-2 flex flex-wrap gap-3">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    const pSel = plazos.find(p => p.id === successVenta.plazo_id);
+                    const dSel = depositos.find(d => d.id === successVenta.deposito_id);
+                    const mSel = monedas.find(m => m.id === successVenta.moneda_id);
+                    const tSel = tiposDoc.find(t => t.id === successVenta.tipo_doc_id);
+                    const cSel = clientes.find(c => c.id === successVenta.cliente_id);
+
+                    printInvoice(successVenta, {
+                      clienteRuc: cSel?.ruc,
+                      clienteDireccion: cSel?.direccion,
+                      clienteTelefono: cSel?.telefono,
+                      monedaDesc: mSel?.descripcion,
+                      monedaAbrev: mSel?.abreviatura,
+                      depositoDesc: dSel?.descripcion,
+                      tipoDocDesc: tSel?.descripcion,
+                      plazoDesc: pSel?.plazo
+                    });
+                  }}
+                  className="flex items-center gap-1.5"
+                >
+                  <Printer className="w-4 h-4 text-emerald-600" />
+                  <span>Imprimir / Descargar Factura</span>
+                </Button>
+
+                
                 <Button
                   variant="primary"
                   size="sm"
@@ -212,6 +242,7 @@ export const VentaForm: React.FC<VentaFormProps> = ({
                   <span>Registrar Otra Venta</span>
                 </Button>
               </div>
+
             </div>
           </div>
         </Card>

@@ -6,7 +6,9 @@ import { Venta } from '../../types/venta';
 import { Cliente, Moneda, Plazo, TipoDocumento } from '../../types/catalogos';
 import { formatCurrency, formatInvoice } from '../../utils/formatters';
 import { formatDate } from '../../utils/dates';
-import { Eye, ShieldAlert } from 'lucide-react';
+import { Eye, ShieldAlert, Printer } from 'lucide-react';
+import { printInvoice } from '../../utils/invoicePrinter';
+
 
 interface VentasTableProps {
   ventas: Venta[];
@@ -136,8 +138,40 @@ export const VentasTable: React.FC<VentasTableProps> = ({
                   <Eye className="w-3.5 h-3.5" />
                   <span>Ver Cuotas</span>
                 </Button>
+                
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200"
+                  onClick={() => {
+                    const cSel = clientes.find(c => c.id === venta.cliente_id);
+                    const mSel = monedas.find(m => m.id === venta.moneda_id);
+                    const pSel = plazos.find(p => p.id === venta.plazo_id);
+                    const tSel = tiposDoc.find(t => t.id === venta.tipo_doc_id);
+                    
+                    // Mapeo local de depósitos para evitar cambiar firmas de componentes
+                    const depDesc = venta.deposito_id === 2 
+                      ? 'Depósito Ciudad del Este' 
+                      : (venta.deposito_id === 3 ? 'Depósito Encarnación' : 'Depósito Central (Asunción)');
+
+                    printInvoice(venta, {
+                      clienteRuc: cSel?.ruc,
+                      clienteDireccion: cSel?.direccion,
+                      clienteTelefono: cSel?.telefono,
+                      monedaDesc: mSel?.descripcion,
+                      monedaAbrev: mSel?.abreviatura,
+                      depositoDesc: depDesc,
+                      tipoDocDesc: tSel?.descripcion,
+                      plazoDesc: pSel?.plazo
+                    });
+                  }}
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Factura</span>
+                </Button>
               </div>
             </td>
+
           </tr>
         );
       })}
